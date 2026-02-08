@@ -1,8 +1,10 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { app, BrowserWindow, ipcMain, dialog } = require('electron')
+import type { BrowserWindow as BrowserWindowType, IpcMainInvokeEvent } from 'electron'
 import path from 'path'
 import fs from 'fs'
 
-let mainWindow: BrowserWindow | null = null
+let mainWindow: BrowserWindowType | null = null
 
 const createWindow = () => {
   mainWindow = new BrowserWindow({
@@ -21,12 +23,12 @@ const createWindow = () => {
   })
 
   // In development, load from Vite dev server
-  if (process.env.NODE_ENV === 'development' || !app.isPackaged) {
-    mainWindow.loadURL('http://localhost:5173')
-    mainWindow.webContents.openDevTools()
+  if (process.env.VITE_DEV_SERVER_URL) {
+    mainWindow!.loadURL(process.env.VITE_DEV_SERVER_URL)
+    mainWindow!.webContents.openDevTools()
   } else {
     // In production, load the built files
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
+    mainWindow!.loadFile(path.join(__dirname, '../dist/index.html'))
   }
 }
 
@@ -47,9 +49,9 @@ app.on('window-all-closed', () => {
 })
 
 // IPC Handlers for file operations
-ipcMain.handle('file:save', async (_, data: string, filePath?: string) => {
+ipcMain.handle('file:save', async (_event: IpcMainInvokeEvent, data: string, filePath?: string) => {
   try {
-    let savePath = filePath
+    let savePath: string | undefined = filePath
     
     if (!savePath) {
       const result = await dialog.showSaveDialog(mainWindow!, {
@@ -66,7 +68,7 @@ ipcMain.handle('file:save', async (_, data: string, filePath?: string) => {
       savePath = result.filePath
     }
     
-    fs.writeFileSync(savePath, data, 'utf-8')
+    fs.writeFileSync(savePath!, data, 'utf-8')
     return { success: true, filePath: savePath }
   } catch (error) {
     return { success: false, error: String(error) }
@@ -94,7 +96,21 @@ ipcMain.handle('file:load', async () => {
   }
 })
 
-ipcMain.handle('file:export', async (_, data: string, defaultName: string) => {
+// Load a file directly from a path (for recent projects)
+ipcMain.handle('file:loadFromPath', async (_event: IpcMainInvokeEvent, filePath: string) => {
+  try {
+    if (!fs.existsSync(filePath)) {
+      return { success: false, error: 'File not found' }
+    }
+    
+    const content = fs.readFileSync(filePath, 'utf-8')
+    return { success: true, data: content, filePath }
+  } catch (error) {
+    return { success: false, error: String(error) }
+  }
+})
+
+ipcMain.handle('file:export', async (_event: IpcMainInvokeEvent, data: string, defaultName: string) => {
   try {
     const result = await dialog.showSaveDialog(mainWindow!, {
       title: 'Export Quest',
