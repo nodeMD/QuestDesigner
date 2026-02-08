@@ -18,19 +18,8 @@ export const ConditionNode = memo(({ data, selected }: NodeProps) => {
     <div className={`quest-node node-condition ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
       {/* Input handle(s) */}
       {(isAnd || isOr) ? (
-        // Multiple inputs for AND/OR
-        <>
-          {Array.from({ length: (node as AndNode | OrNode).inputCount }).map((_, i) => (
-            <Handle
-              key={i}
-              type="target"
-              position={Position.Left}
-              id={`input-${i}`}
-              className="!bg-node-condition !border-node-condition"
-              style={{ top: `${30 + (i * 24)}px` }}
-            />
-          ))}
-        </>
+        // Multiple inputs for AND/OR - rendered in the content area
+        null
       ) : (
         // Single input for IF
         <Handle
@@ -54,11 +43,29 @@ export const ConditionNode = memo(({ data, selected }: NodeProps) => {
           </p>
         )}
         {(isAnd || isOr) && (
-          <p className="text-sm text-text-secondary">
+          <p className="text-sm text-text-secondary mb-2">
             {isAnd ? 'All inputs must pass' : 'Any input can pass'}
           </p>
         )}
       </div>
+
+      {/* Input handles for AND/OR - shown as list items */}
+      {(isAnd || isOr) && (
+        <div className="border-t border-panel-border">
+          {Array.from({ length: (node as AndNode | OrNode).inputCount }).map((_, i) => (
+            <div key={i} className="quest-node-option relative">
+              <Handle
+                type="target"
+                position={Position.Left}
+                id={`input-${i}`}
+                className="!bg-node-condition !border-node-condition"
+                style={{ top: 'auto', position: 'relative', transform: 'none', left: '-6px' }}
+              />
+              <span className="text-text-muted ml-2">Input {i + 1}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Output handles */}
       {isIf ? (
