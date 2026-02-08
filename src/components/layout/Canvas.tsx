@@ -1,0 +1,207 @@
+import { useCallback, useMemo } from 'react'
+import {
+  ReactFlow,
+  Background,
+  Controls,
+  MiniMap,
+  Node,
+  NodeTypes,
+  BackgroundVariant,
+  OnConnect,
+  NodeChange,
+  EdgeChange,
+} from '@xyflow/react'
+import { useProjectStore } from '@/stores/projectStore'
+import { useUIStore } from '@/stores/uiStore'
+import { StartNode } from '@/components/nodes/StartNode'
+import { DialogueNode } from '@/components/nodes/DialogueNode'
+import { ChoiceNode } from '@/components/nodes/ChoiceNode'
+import { EventNode } from '@/components/nodes/EventNode'
+import { ConditionNode } from '@/components/nodes/ConditionNode'
+import { EndNode } from '@/components/nodes/EndNode'
+import type { QuestNode } from '@/types'
+
+// Register custom node types
+const nodeTypes: NodeTypes = {
+  START: StartNode,
+  DIALOGUE: DialogueNode,
+  CHOICE: ChoiceNode,
+  EVENT: EventNode,
+  IF: ConditionNode,
+  AND: ConditionNode,
+  OR: ConditionNode,
+  END: EndNode,
+}
+
+// Convert our nodes to React Flow nodes
+function questNodeToFlowNode(node: QuestNode): Node {
+  return {
+    id: node.id,
+    type: node.type,
+    position: node.position,
+    data: node as unknown as Record<string, unknown>,
+  }
+}
+
+// Get edge color based on source node type
+function getEdgeColor(nodeType: string): string {
+  const colors: Record<string, string> = {
+    START: '#22c55e',
+    DIALOGUE: '#3b82f6',
+    CHOICE: '#a855f7',
+    EVENT: '#f97316',
+    IF: '#06b6d4',
+    AND: '#06b6d4',
+    OR: '#06b6d4',
+    END: '#f43f5e',
+  }
+  return colors[nodeType] || '#666666'
+}
+
+export function Canvas() {
+  const { 
+    project, 
+    currentQuestId, 
+    addConnection, 
+    deleteConnection,
+    updateNode,
+    selectedNodeId,
+    selectNode,
+  } = useProjectStore()
+  const { openContextMenu, openEditPanel } = useUIStore()
+
+  const currentQuest = project?.quests.find(q => q.id === currentQuestId)
+
+  // Convert quest data to React Flow format
+  const flowNodes = useMemo(() => {
+    if (!currentQuest) return []
+    return currentQuest.nodes.map(questNodeToFlowNode)
+  }, [currentQuest])
+
+  const flowEdges = useMemo(() => {
+    if (!currentQuest) return []
+    return currentQuest.connections.map((conn) => {
+      const sourceNode = currentQuest.nodes.find(n => n.id === conn.sourceNodeId)
+      return {
+        id: conn.id,
+        source: conn.sourceNodeId,
+        target: conn.targetNodeId,
+        sourceHandle: conn.sourceOptionId || conn.sourceOutput,
+        style: {
+          stroke: getEdgeColor(sourceNode?.type || ''),
+          strokeWidth: 2,
+        },
+        animated: true,
+      }
+    })
+  }, [currentQuest])
+
+  // Handle node changes (position, selection)
+  const onNodesChange = useCallback((changes: NodeChange[]) => {
+    changes.forEach(change => {
+      if (change.type === 'position' && change.position) {
+        updateNode(change.id, { position: change.position })
+      }
+      if (change.type === 'select') {
+        if (change.selected) {
+          selectNode(change.id)
+        } else if (selectedNodeId === change.id) {
+          selectNode(null)
+        }
+      }
+    })
+  }, [updateNode, selectNode, selectedNodeId])
+
+  // Handle new connections
+  const onConnect: OnConnect = useCallback((connection) => {
+    if (connection.source && connection.target) {
+      addConnection({
+        sourceNodeId: connection.source,
+        sourceOptionId: connection.sourceHandle || undefined,
+        targetNodeId: connection.target,
+      })
+    }
+  }, [addConnection])
+
+  // Handle edge deletion
+  const onEdgesChange = useCallback((changes: EdgeChange[]) => {
+    changes.forEach(change => {
+      if (change.type === 'remove') {
+        deleteConnection(change.id)
+      }
+    })
+  }, [deleteConnection])
+
+  // Handle context menu (right-click)
+  const onContextMenu = useCallback((event: React.MouseEvent) => {
+    event.preventDefault()
+    
+    // Get canvas-relative position
+    const bounds = (event.target as HTMLElement).closest('.react-flow')?.getBoundingClientRect()
+    if (!bounds) return
+
+    openContextMenu('canvas', {
+      x: event.clientX,
+      y: event.clientY,
+    })
+  }, [openContextMenu])
+
+  // Handle node double-click to open edit panel
+  const onNodeDoubleClick = useCallback((_: React.MouseEvent, node: Node) => {
+    openEditPanel(node.id)
+  }, [openEditPanel])
+
+  // Empty state
+  if (!currentQuest) {
+    return (
+      <div className="h-full flex items-center justify-center text-text-muted">
+        <div className="text-center">
+          <p className="text-lg mb-2">No quest selected</p>
+          <p className="text-sm">Create or select a quest from the sidebar</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <ReactFlow
+      nodes={flowNodes}
+      edges={flowEdges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onConnect={onConnect}
+      onContextMenu={onContextMenu}
+      onNodeDoubleClick={onNodeDoubleClick}
+      nodeTypes={nodeTypes}
+      fitView
+      snapToGrid
+      snapGrid={[20, 20]}
+      minZoom={0.1}
+      maxZoom={2}
+      defaultEdgeOptions={{
+        type: 'smoothstep',
+        animated: true,
+      }}
+      proOptions={{ hideAttribution: true }}
+    >
+      <Background 
+        variant={BackgroundVariant.Dots} 
+        gap={20} 
+        size={1} 
+        color="#2a2a2a"
+      />
+      <Controls 
+        showZoom
+        showFitView
+        showInteractive={false}
+        position="bottom-right"
+      />
+      <MiniMap 
+        nodeColor={(node) => getEdgeColor(node.type || '')}
+        maskColor="rgba(0, 0, 0, 0.8)"
+        position="bottom-left"
+      />
+    </ReactFlow>
+  )
+}
+
