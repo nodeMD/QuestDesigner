@@ -33,6 +33,7 @@ export interface Connection {
   sourceOptionId?: string
   sourceOutput?: string // For IF nodes: 'true' | 'false'
   targetNodeId: string
+  targetHandle?: string // For nodes with multiple inputs like AND/OR
 }
 
 // Viewport state
