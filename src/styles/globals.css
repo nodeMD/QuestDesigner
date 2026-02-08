@@ -213,3 +213,12 @@ textarea {
 .header-condition { @apply bg-node-condition/20 text-node-condition; }
 .header-end { @apply bg-node-end/20 text-node-end; }
 
+/* Electron drag region for window movement */
+.app-drag-region {
+  -webkit-app-region: drag;
+}
+
+.app-no-drag {
+  -webkit-app-region: no-drag;
+}
+
