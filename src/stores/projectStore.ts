@@ -26,6 +26,7 @@ interface ProjectState {
   setProject: (project: Project) => void
   setFilePath: (path: string | null) => void
   setDirty: (dirty: boolean) => void
+  renameProject: (name: string) => void
   
   // Quest actions
   createQuest: (name: string) => void
@@ -173,6 +174,20 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   setFilePath: (path) => set({ filePath: path }),
   setDirty: (dirty) => set({ isDirty: dirty }),
+  
+  renameProject: (name) => {
+    const { project } = get()
+    if (!project) return
+    
+    set({
+      project: {
+        ...project,
+        name,
+        updatedAt: new Date(),
+      },
+      isDirty: true,
+    })
+  },
 
   createQuest: (name) => {
     const { project } = get()
