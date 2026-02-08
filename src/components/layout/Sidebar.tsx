@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { 
   Plus, 
   ScrollText, 
@@ -6,7 +6,9 @@ import {
   MoreHorizontal, 
   Pencil, 
   Trash2,
-  ChevronRight
+  ChevronRight,
+  Check,
+  X
 } from 'lucide-react'
 import { useProjectStore } from '@/stores/projectStore'
 import { useUIStore } from '@/stores/uiStore'
@@ -18,7 +20,9 @@ export function Sidebar() {
     createQuest, 
     selectQuest, 
     deleteQuest,
-    createEvent 
+    updateQuest,
+    createEvent,
+    renameProject
   } = useProjectStore()
   const { sidebarTab, setSidebarTab } = useUIStore()
 
@@ -27,6 +31,65 @@ export function Sidebar() {
   const [newEventName, setNewEventName] = useState('')
   const [isAddingEvent, setIsAddingEvent] = useState(false)
   const [contextMenuId, setContextMenuId] = useState<string | null>(null)
+  const [renamingQuestId, setRenamingQuestId] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState('')
+  const [isRenamingProject, setIsRenamingProject] = useState(false)
+  const [projectRenameValue, setProjectRenameValue] = useState('')
+  const renameInputRef = useRef<HTMLInputElement>(null)
+  const projectRenameInputRef = useRef<HTMLInputElement>(null)
+
+  // Focus rename input when renaming starts
+  useEffect(() => {
+    if (renamingQuestId && renameInputRef.current) {
+      renameInputRef.current.focus()
+      renameInputRef.current.select()
+    }
+  }, [renamingQuestId])
+
+  useEffect(() => {
+    if (isRenamingProject && projectRenameInputRef.current) {
+      projectRenameInputRef.current.focus()
+      projectRenameInputRef.current.select()
+    }
+  }, [isRenamingProject])
+
+  const handleStartRename = (questId: string, currentName: string) => {
+    setRenamingQuestId(questId)
+    setRenameValue(currentName)
+    setContextMenuId(null)
+  }
+
+  const handleConfirmRename = () => {
+    if (renamingQuestId && renameValue.trim()) {
+      updateQuest(renamingQuestId, { name: renameValue.trim() })
+    }
+    setRenamingQuestId(null)
+    setRenameValue('')
+  }
+
+  const handleCancelRename = () => {
+    setRenamingQuestId(null)
+    setRenameValue('')
+  }
+
+  const handleStartProjectRename = () => {
+    if (!project) return
+    setIsRenamingProject(true)
+    setProjectRenameValue(project.name)
+  }
+
+  const handleConfirmProjectRename = () => {
+    if (projectRenameValue.trim()) {
+      renameProject(projectRenameValue.trim())
+    }
+    setIsRenamingProject(false)
+    setProjectRenameValue('')
+  }
+
+  const handleCancelProjectRename = () => {
+    setIsRenamingProject(false)
+    setProjectRenameValue('')
+  }
 
   const handleAddQuest = () => {
     if (newQuestName.trim()) {
@@ -50,7 +113,42 @@ export function Sidebar() {
     <aside className="w-72 bg-sidebar-bg border-r border-sidebar-border flex flex-col">
       {/* Project name */}
       <div className="px-4 py-3 border-b border-sidebar-border">
-        <h2 className="font-semibold text-text-primary truncate">{project.name}</h2>
+        {isRenamingProject ? (
+          <div className="flex items-center gap-1">
+            <input
+              ref={projectRenameInputRef}
+              type="text"
+              value={projectRenameValue}
+              onChange={(e) => setProjectRenameValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleConfirmProjectRename()
+                if (e.key === 'Escape') handleCancelProjectRename()
+              }}
+              onBlur={handleConfirmProjectRename}
+              className="flex-1 text-sm px-1 py-0.5 bg-sidebar-bg border border-accent-blue rounded font-semibold"
+            />
+            <button
+              onClick={handleConfirmProjectRename}
+              className="p-0.5 hover:bg-node-start/20 rounded text-node-start"
+            >
+              <Check className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={handleCancelProjectRename}
+              className="p-0.5 hover:bg-validation-error/20 rounded text-validation-error"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          <h2 
+            className="font-semibold text-text-primary truncate cursor-pointer hover:text-accent-blue transition-colors"
+            onClick={handleStartProjectRename}
+            title="Click to rename project"
+          >
+            {project.name}
+          </h2>
+        )}
       </div>
 
       {/* Tab switcher */}
@@ -92,32 +190,61 @@ export function Sidebar() {
                     ? 'bg-accent-blue/20 text-accent-blue' 
                     : 'text-text-secondary hover:bg-sidebar-hover hover:text-text-primary'
                   }`}
-                onClick={() => selectQuest(quest.id)}
+                onClick={() => !renamingQuestId && selectQuest(quest.id)}
               >
-                <ChevronRight className={`w-4 h-4 transition-transform ${currentQuestId === quest.id ? 'rotate-90' : ''}`} />
-                <span className="flex-1 truncate text-sm">{quest.name}</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setContextMenuId(contextMenuId === quest.id ? null : quest.id)
-                  }}
-                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-panel-border rounded transition-all"
-                >
-                  <MoreHorizontal className="w-4 h-4" />
-                </button>
+                <ChevronRight className={`w-4 h-4 transition-transform flex-shrink-0 ${currentQuestId === quest.id ? 'rotate-90' : ''}`} />
+                
+                {renamingQuestId === quest.id ? (
+                  <div className="flex-1 flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      ref={renameInputRef}
+                      type="text"
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleConfirmRename()
+                        if (e.key === 'Escape') handleCancelRename()
+                      }}
+                      onBlur={handleConfirmRename}
+                      className="flex-1 text-sm px-1 py-0.5 bg-sidebar-bg border border-accent-blue rounded"
+                    />
+                    <button
+                      onClick={handleConfirmRename}
+                      className="p-0.5 hover:bg-node-start/20 rounded text-node-start"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={handleCancelRename}
+                      className="p-0.5 hover:bg-validation-error/20 rounded text-validation-error"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <span className="flex-1 truncate text-sm">{quest.name}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setContextMenuId(contextMenuId === quest.id ? null : quest.id)
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-panel-border rounded transition-all"
+                    >
+                      <MoreHorizontal className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
                 
                 {/* Quest context menu */}
-                {contextMenuId === quest.id && (
+                {contextMenuId === quest.id && !renamingQuestId && (
                   <div 
                     className="absolute right-0 top-full mt-1 z-50 bg-panel-bg border border-panel-border rounded-md shadow-panel py-1 min-w-32"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
                       className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-text-secondary hover:bg-sidebar-hover hover:text-text-primary"
-                      onClick={() => {
-                        // TODO: Implement rename
-                        setContextMenuId(null)
-                      }}
+                      onClick={() => handleStartRename(quest.id, quest.name)}
                     >
                       <Pencil className="w-4 h-4" />
                       Rename
