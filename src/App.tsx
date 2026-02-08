@@ -2,19 +2,29 @@ import { useEffect } from 'react'
 import { ReactFlowProvider } from '@xyflow/react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Canvas } from '@/components/layout/Canvas'
+import { Toolbar } from '@/components/layout/Toolbar'
 import { StatusBar } from '@/components/layout/StatusBar'
 import { NodeEditPanel } from '@/components/panels/NodeEditPanel'
+import { ValidationPanel } from '@/components/panels/ValidationPanel'
 import { ContextMenu } from '@/components/ui/ContextMenu'
 import { DeleteModal } from '@/components/ui/DeleteModal'
 import { WelcomeScreen } from '@/components/WelcomeScreen'
 import { useProjectStore } from '@/stores/projectStore'
 import { useUIStore } from '@/stores/uiStore'
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import { useAutoSave } from '@/hooks/useAutoSave'
 
 import '@xyflow/react/dist/style.css'
 
 function App() {
   const { project } = useProjectStore()
   const { contextMenu, closeContextMenu } = useUIStore()
+
+  // Register keyboard shortcuts
+  useKeyboardShortcuts()
+  
+  // Auto-save when changes are made
+  useAutoSave()
 
   // Close context menu on click outside
   useEffect(() => {
@@ -36,6 +46,9 @@ function App() {
   return (
     <ReactFlowProvider>
       <div className="h-screen w-screen flex flex-col bg-canvas-bg">
+        {/* Toolbar */}
+        <Toolbar />
+        
         {/* Main content area */}
         <div className="flex-1 flex overflow-hidden">
           {/* Sidebar */}
@@ -44,6 +57,9 @@ function App() {
           {/* Canvas area */}
           <div className="flex-1 relative">
             <Canvas />
+            
+            {/* Validation panel (floating) */}
+            <ValidationPanel />
           </div>
           
           {/* Edit panel (slide-in from right) */}
