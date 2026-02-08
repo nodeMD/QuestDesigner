@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useEffect } from 'react'
 import {
   ReactFlow,
   Background,
@@ -6,10 +6,12 @@ import {
   MiniMap,
   Node,
   NodeTypes,
+  EdgeTypes,
   BackgroundVariant,
   OnConnect,
   NodeChange,
   EdgeChange,
+  useReactFlow,
 } from '@xyflow/react'
 import { useProjectStore } from '@/stores/projectStore'
 import { useUIStore } from '@/stores/uiStore'
@@ -19,6 +21,7 @@ import { ChoiceNode } from '@/components/nodes/ChoiceNode'
 import { EventNode } from '@/components/nodes/EventNode'
 import { ConditionNode } from '@/components/nodes/ConditionNode'
 import { EndNode } from '@/components/nodes/EndNode'
+import { DeletableEdge } from '@/components/edges/DeletableEdge'
 import type { QuestNode } from '@/types'
 
 // Register custom node types
@@ -31,6 +34,11 @@ const nodeTypes: NodeTypes = {
   AND: ConditionNode,
   OR: ConditionNode,
   END: EndNode,
+}
+
+// Register custom edge types
+const edgeTypes: EdgeTypes = {
+  deletable: DeletableEdge,
 }
 
 // Convert our nodes to React Flow nodes
@@ -68,9 +76,28 @@ export function Canvas() {
     selectedNodeId,
     selectNode,
   } = useProjectStore()
-  const { openContextMenu, openEditPanel } = useUIStore()
+  const { openContextMenu, openEditPanel, focusNodeId, clearFocusNode } = useUIStore()
+  const { setCenter, getZoom } = useReactFlow()
 
   const currentQuest = project?.quests.find(q => q.id === currentQuestId)
+
+  // Pan to focused node when focusNodeId changes
+  useEffect(() => {
+    if (focusNodeId && currentQuest) {
+      const node = currentQuest.nodes.find(n => n.id === focusNodeId)
+      if (node) {
+        // Center the viewport on the node with a smooth animation
+        const zoom = getZoom()
+        setCenter(
+          node.position.x + 140, // Add half the node width (~280px) to center it
+          node.position.y + 50,  // Add some offset for the node height
+          { zoom: Math.max(zoom, 0.8), duration: 500 }
+        )
+        // Clear the focus after panning
+        setTimeout(() => clearFocusNode(), 600)
+      }
+    }
+  }, [focusNodeId, currentQuest, setCenter, getZoom, clearFocusNode])
 
   // Convert quest data to React Flow format
   const flowNodes = useMemo(() => {
@@ -87,9 +114,10 @@ export function Canvas() {
         source: conn.sourceNodeId,
         target: conn.targetNodeId,
         sourceHandle: conn.sourceOptionId || conn.sourceOutput,
+        targetHandle: conn.targetHandle,
+        type: 'deletable',
         style: {
           stroke: getEdgeColor(sourceNode?.type || ''),
-          strokeWidth: 2,
         },
         animated: true,
       }
@@ -115,13 +143,28 @@ export function Canvas() {
   // Handle new connections
   const onConnect: OnConnect = useCallback((connection) => {
     if (connection.source && connection.target) {
+      // Find source node to determine connection type
+      const sourceNode = currentQuest?.nodes.find(n => n.id === connection.source)
+      const sourceHandleId = connection.sourceHandle || undefined
+      const targetHandleId = connection.targetHandle || undefined
+      
+      // IF, AND, OR, and EVENT CHECK nodes use sourceOutput for true/false handles
+      const usesSourceOutput = sourceNode && (
+        sourceNode.type === 'IF' || 
+        sourceNode.type === 'AND' || 
+        sourceNode.type === 'OR' ||
+        (sourceNode.type === 'EVENT' && sourceNode.action === 'CHECK')
+      )
+      
       addConnection({
         sourceNodeId: connection.source,
-        sourceOptionId: connection.sourceHandle || undefined,
+        sourceOptionId: usesSourceOutput ? undefined : sourceHandleId,
+        sourceOutput: usesSourceOutput ? sourceHandleId : undefined,
         targetNodeId: connection.target,
+        targetHandle: targetHandleId,
       })
     }
-  }, [addConnection])
+  }, [addConnection, currentQuest])
 
   // Handle edge deletion
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
@@ -173,13 +216,14 @@ export function Canvas() {
       onContextMenu={onContextMenu}
       onNodeDoubleClick={onNodeDoubleClick}
       nodeTypes={nodeTypes}
+      edgeTypes={edgeTypes}
       fitView
       snapToGrid
       snapGrid={[20, 20]}
       minZoom={0.1}
       maxZoom={2}
       defaultEdgeOptions={{
-        type: 'smoothstep',
+        type: 'deletable',
         animated: true,
       }}
       proOptions={{ hideAttribution: true }}
