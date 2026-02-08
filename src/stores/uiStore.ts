@@ -27,6 +27,9 @@ interface UIState {
   isValidating: boolean
   validationPanelOpen: boolean
   
+  // Canvas focus - for panning to a node
+  focusNodeId: string | null
+  
   // Actions
   openEditPanel: (nodeId: string) => void
   closeEditPanel: () => void
@@ -41,6 +44,9 @@ interface UIState {
   
   setValidating: (validating: boolean) => void
   setValidationPanelOpen: (open: boolean) => void
+  
+  focusOnNode: (nodeId: string) => void
+  clearFocusNode: () => void
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -60,6 +66,8 @@ export const useUIStore = create<UIState>((set) => ({
   
   isValidating: false,
   validationPanelOpen: false,
+  
+  focusNodeId: null,
 
   openEditPanel: (nodeId) => set({ isEditPanelOpen: true, editingNodeId: nodeId }),
   closeEditPanel: () => set({ isEditPanelOpen: false, editingNodeId: null }),
@@ -80,5 +88,8 @@ export const useUIStore = create<UIState>((set) => ({
 
   setValidating: (validating) => set({ isValidating: validating }),
   setValidationPanelOpen: (open) => set({ validationPanelOpen: open }),
+  
+  focusOnNode: (nodeId) => set({ focusNodeId: nodeId }),
+  clearFocusNode: () => set({ focusNodeId: null }),
 }))
 
