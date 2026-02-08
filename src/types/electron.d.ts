@@ -16,6 +16,12 @@ declare global {
         canceled?: boolean
         error?: string
       }>
+      loadFromPath: (filePath: string) => Promise<{
+        success: boolean
+        data?: string
+        filePath?: string
+        error?: string
+      }>
       exportFile: (data: string, defaultName: string) => Promise<{
         success: boolean
         filePath?: string
