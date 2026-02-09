@@ -41,7 +41,7 @@ A visual node-based quest design tool for game developers. Create complex, branc
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/QuestDesigner.git
+git clone https://github.com/nodeMD/QuestDesigner.git
 cd QuestDesigner
 
 # Install dependencies

@@ -1,4 +1,4 @@
-# Quest Designer License 1.0
+# Quest Designer License 1.1
 
 Copyright (c) 2026 Quest Designer Contributors
 
@@ -13,6 +13,19 @@ The licensor grants you a non-exclusive, royalty-free, worldwide license to use,
 - You may not provide the Software as a hosted or managed service that offers users access to substantial features or functionality of the Software.
 
 - You may not remove or obscure any licensing, copyright, or other notices in the Software.
+
+## Commercial Use Attribution
+
+If you use the Software or quest files created with it in a commercial project (including but not limited to video games, interactive media, or software sold for profit), you must include attribution to Quest Designer in one of the following ways:
+
+- In the credits, documentation, or "About" section of your project, include: **"Quest design created with [Quest Designer](https://github.com/nodeMD/QuestDesigner)"**
+
+- Or provide a link to the Quest Designer repository in your project's documentation or website.
+
+This attribution requirement does not apply to:
+- Personal or educational projects
+- Open source projects
+- Internal tools not distributed commercially
 
 ## Patent License
 
