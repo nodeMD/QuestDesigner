@@ -8,7 +8,8 @@ import {
   Trash2,
   ChevronRight,
   Check,
-  X
+  X,
+  Settings
 } from 'lucide-react'
 import { useProjectStore } from '@/stores/projectStore'
 import { useUIStore } from '@/stores/uiStore'
@@ -19,12 +20,12 @@ export function Sidebar() {
     currentQuestId, 
     createQuest, 
     selectQuest, 
-    deleteQuest,
     updateQuest,
     createEvent,
+    updateEvent,
     renameProject
   } = useProjectStore()
-  const { sidebarTab, setSidebarTab } = useUIStore()
+  const { sidebarTab, setSidebarTab, openDeleteModal, openEventEditPanel } = useUIStore()
 
   const [newQuestName, setNewQuestName] = useState('')
   const [isAddingQuest, setIsAddingQuest] = useState(false)
@@ -35,8 +36,12 @@ export function Sidebar() {
   const [renameValue, setRenameValue] = useState('')
   const [isRenamingProject, setIsRenamingProject] = useState(false)
   const [projectRenameValue, setProjectRenameValue] = useState('')
+  const [eventContextMenuId, setEventContextMenuId] = useState<string | null>(null)
+  const [renamingEventId, setRenamingEventId] = useState<string | null>(null)
+  const [eventRenameValue, setEventRenameValue] = useState('')
   const renameInputRef = useRef<HTMLInputElement>(null)
   const projectRenameInputRef = useRef<HTMLInputElement>(null)
+  const eventRenameInputRef = useRef<HTMLInputElement>(null)
 
   // Focus rename input when renaming starts
   useEffect(() => {
@@ -52,6 +57,13 @@ export function Sidebar() {
       projectRenameInputRef.current.select()
     }
   }, [isRenamingProject])
+
+  useEffect(() => {
+    if (renamingEventId && eventRenameInputRef.current) {
+      eventRenameInputRef.current.focus()
+      eventRenameInputRef.current.select()
+    }
+  }, [renamingEventId])
 
   const handleStartRename = (questId: string, currentName: string) => {
     setRenamingQuestId(questId)
@@ -89,6 +101,25 @@ export function Sidebar() {
   const handleCancelProjectRename = () => {
     setIsRenamingProject(false)
     setProjectRenameValue('')
+  }
+
+  const handleStartEventRename = (eventId: string, currentName: string) => {
+    setRenamingEventId(eventId)
+    setEventRenameValue(currentName)
+    setEventContextMenuId(null)
+  }
+
+  const handleConfirmEventRename = () => {
+    if (renamingEventId && eventRenameValue.trim()) {
+      updateEvent(renamingEventId, { name: eventRenameValue.trim() })
+    }
+    setRenamingEventId(null)
+    setEventRenameValue('')
+  }
+
+  const handleCancelEventRename = () => {
+    setRenamingEventId(null)
+    setEventRenameValue('')
   }
 
   const handleAddQuest = () => {
@@ -252,7 +283,7 @@ export function Sidebar() {
                     <button
                       className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-validation-error hover:bg-sidebar-hover"
                       onClick={() => {
-                        deleteQuest(quest.id)
+                        openDeleteModal('quest', quest.id)
                         setContextMenuId(null)
                       }}
                     >
@@ -317,18 +348,100 @@ export function Sidebar() {
             {project.events.map((event) => (
               <div
                 key={event.id}
-                className="flex items-center gap-2 px-3 py-2 rounded-md text-text-secondary 
-                           hover:bg-sidebar-hover hover:text-text-primary cursor-pointer transition-colors"
+                onClick={() => !renamingEventId && openEventEditPanel(event.id)}
+                className="relative flex items-center gap-2 px-3 py-2 rounded-md text-text-secondary 
+                           hover:bg-sidebar-hover hover:text-text-primary cursor-pointer transition-colors group"
               >
-                <Zap className="w-4 h-4 text-node-event" />
+                <Zap className="w-4 h-4 text-node-event flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <span className="block truncate text-sm">{event.name}</span>
-                  {event.usedInQuests.length > 0 && (
-                    <span className="text-xs text-text-muted">
-                      Used in {event.usedInQuests.length} quest(s)
-                    </span>
+                  {renamingEventId === event.id ? (
+                    <div className="flex items-center gap-1">
+                      <input
+                        ref={eventRenameInputRef}
+                        type="text"
+                        value={eventRenameValue}
+                        onChange={(e) => setEventRenameValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleConfirmEventRename()
+                          if (e.key === 'Escape') handleCancelEventRename()
+                        }}
+                        onBlur={handleConfirmEventRename}
+                        className="w-full text-sm py-0.5"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleConfirmEventRename(); }}
+                        className="p-0.5 text-node-start hover:bg-sidebar-hover rounded"
+                      >
+                        <Check className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleCancelEventRename(); }}
+                        className="p-0.5 text-node-end hover:bg-sidebar-hover rounded"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="block truncate text-sm">{event.name}</span>
+                      {event.usedInQuests.length > 0 && (
+                        <span className="text-xs text-text-muted">
+                          Used in {event.usedInQuests.length} quest(s)
+                        </span>
+                      )}
+                    </>
                   )}
                 </div>
+                
+                {/* Context menu button */}
+                {!renamingEventId && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setEventContextMenuId(eventContextMenuId === event.id ? null : event.id)
+                    }}
+                    className="p-1 opacity-0 group-hover:opacity-100 hover:bg-sidebar-hover rounded transition-opacity"
+                  >
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+                )}
+
+                {/* Context menu dropdown */}
+                {eventContextMenuId === event.id && !renamingEventId && (
+                  <div 
+                    className="absolute right-0 top-full mt-1 z-50 bg-panel-bg border border-panel-border rounded-md shadow-panel py-1 min-w-32"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-text-secondary hover:bg-sidebar-hover hover:text-text-primary"
+                      onClick={() => {
+                        openEventEditPanel(event.id)
+                        setEventContextMenuId(null)
+                      }}
+                    >
+                      <Settings className="w-4 h-4" />
+                      Edit Parameters
+                    </button>
+                    <button
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-text-secondary hover:bg-sidebar-hover hover:text-text-primary"
+                      onClick={() => handleStartEventRename(event.id, event.name)}
+                    >
+                      <Pencil className="w-4 h-4" />
+                      Rename
+                    </button>
+                    <button
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-validation-error hover:bg-sidebar-hover"
+                      onClick={() => {
+                        openDeleteModal('event', event.id)
+                        setEventContextMenuId(null)
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
 
