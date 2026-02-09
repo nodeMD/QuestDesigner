@@ -8,8 +8,8 @@ export function useAutoSave() {
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    // Only auto-save if we have a file path (project was previously saved)
-    if (!project || !filePath || !isDirty) return
+    // Only auto-save if enabled in settings, we have a file path, and there are unsaved changes
+    if (!project || !project.settings.autoSave || !filePath || !isDirty) return
 
     // Clear any existing timeout
     if (saveTimeoutRef.current) {
