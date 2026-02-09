@@ -6,6 +6,8 @@ import { Toolbar } from '@/components/layout/Toolbar'
 import { StatusBar } from '@/components/layout/StatusBar'
 import { NodeEditPanel } from '@/components/panels/NodeEditPanel'
 import { ValidationPanel } from '@/components/panels/ValidationPanel'
+import { SearchPanel } from '@/components/panels/SearchPanel'
+import { EventEditPanel } from '@/components/panels/EventEditPanel'
 import { ContextMenu } from '@/components/ui/ContextMenu'
 import { DeleteModal } from '@/components/ui/DeleteModal'
 import { WelcomeScreen } from '@/components/WelcomeScreen'
@@ -64,6 +66,9 @@ function App() {
           
           {/* Edit panel (slide-in from right) */}
           <NodeEditPanel />
+          
+          {/* Event edit panel */}
+          <EventEditPanel />
         </div>
         
         {/* Status bar */}
@@ -71,6 +76,9 @@ function App() {
         
         {/* Context menu */}
         <ContextMenu />
+        
+        {/* Search panel */}
+        <SearchPanel />
         
         {/* Delete confirmation modal */}
         <DeleteModal />
