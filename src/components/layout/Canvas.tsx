@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useEffect } from 'react'
+import { useCallback, useMemo, useEffect, useState } from 'react'
 import {
   ReactFlow,
   Background,
@@ -12,6 +12,7 @@ import {
   NodeChange,
   EdgeChange,
   useReactFlow,
+  applyNodeChanges,
 } from '@xyflow/react'
 import { useProjectStore } from '@/stores/projectStore'
 import { useUIStore } from '@/stores/uiStore'
@@ -81,6 +82,18 @@ export function Canvas() {
 
   const currentQuest = project?.quests.find(q => q.id === currentQuestId)
 
+  // Local state for nodes - allows React Flow to control dragging smoothly
+  const [nodes, setNodes] = useState<Node[]>([])
+
+  // Sync nodes from store to local state when quest changes
+  useEffect(() => {
+    if (currentQuest) {
+      setNodes(currentQuest.nodes.map(questNodeToFlowNode))
+    } else {
+      setNodes([])
+    }
+  }, [currentQuest])
+
   // Pan to focused node when focusNodeId changes
   useEffect(() => {
     if (focusNodeId && currentQuest) {
@@ -98,12 +111,6 @@ export function Canvas() {
       }
     }
   }, [focusNodeId, currentQuest, setCenter, getZoom, clearFocusNode])
-
-  // Convert quest data to React Flow format
-  const flowNodes = useMemo(() => {
-    if (!currentQuest) return []
-    return currentQuest.nodes.map(questNodeToFlowNode)
-  }, [currentQuest])
 
   const flowEdges = useMemo(() => {
     if (!currentQuest) return []
@@ -126,10 +133,16 @@ export function Canvas() {
 
   // Handle node changes (position, selection)
   const onNodesChange = useCallback((changes: NodeChange[]) => {
+    // Apply all changes to local state for smooth UI updates
+    setNodes((nds) => applyNodeChanges(changes, nds))
+    
+    // Handle specific changes
     changes.forEach(change => {
-      if (change.type === 'position' && change.position) {
+      // Persist position to store only when drag ends
+      if (change.type === 'position' && change.dragging === false && change.position) {
         updateNode(change.id, { position: change.position })
       }
+      // Handle selection
       if (change.type === 'select') {
         if (change.selected) {
           selectNode(change.id)
@@ -208,7 +221,7 @@ export function Canvas() {
 
   return (
     <ReactFlow
-      nodes={flowNodes}
+      nodes={nodes}
       edges={flowEdges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
