@@ -4,7 +4,7 @@
   "description": "A visual node-based quest design tool for game developers",
   "main": "dist-electron/main.js",
   "author": "Quest Designer Team",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE.md",
   "overrides": {
     "glob": "^13.0.0",
     "rimraf": "^6.0.0",
