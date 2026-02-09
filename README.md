@@ -2,7 +2,8 @@
 
 A visual node-based quest design tool for game developers. Create complex, branching quest narratives with an intuitive drag-and-drop interface inspired by Unreal Engine Blueprints.
 
-![Quest Designer](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)
+![CI](https://github.com/yourusername/QuestDesigner/actions/workflows/ci.yml/badge.svg)
+![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)
 ![License](https://img.shields.io/badge/License-Quest%20Designer%20License-green)
 
 ## Features
@@ -79,10 +80,29 @@ npm run test:run
 npm run test:coverage
 
 # Run E2E tests (requires built app)
-npm run build && npm run test:e2e
+npm run build:app && npm run test:e2e
 
 # Run E2E tests with UI
 npm run test:e2e:ui
+```
+
+### Code Quality
+
+```bash
+# Run ESLint
+npm run lint
+
+# Fix ESLint issues automatically
+npm run lint:fix
+
+# Check formatting with Prettier
+npm run format:check
+
+# Format code with Prettier
+npm run format
+
+# Type check with TypeScript
+npm run typecheck
 ```
 
 ## Usage
