@@ -77,7 +77,7 @@ export function Canvas() {
     selectedNodeId,
     selectNode,
   } = useProjectStore()
-  const { openContextMenu, openEditPanel, focusNodeId, clearFocusNode, searchResultNodeIds } = useUIStore()
+  const { openContextMenu, openEditPanel, focusNodeId, clearFocusNode, searchResultNodeIds, simulationNodeId, isSimulationOpen } = useUIStore()
   const { setCenter, getZoom } = useReactFlow()
 
   const currentQuest = project?.quests.find(q => q.id === currentQuestId)
@@ -90,17 +90,28 @@ export function Canvas() {
     if (currentQuest) {
       setNodes(currentQuest.nodes.map((node) => {
         const flowNode = questNodeToFlowNode(node)
-        // Add search highlight class if node matches search
-        const isSearchMatch = searchResultNodeIds.includes(node.id)
-        if (isSearchMatch) {
-          flowNode.className = 'search-match'
+        // Add highlight classes
+        const classNames: string[] = []
+        
+        // Search highlight
+        if (searchResultNodeIds.includes(node.id)) {
+          classNames.push('search-match')
+        }
+        
+        // Simulation highlight
+        if (isSimulationOpen && simulationNodeId === node.id) {
+          classNames.push('simulation-active')
+        }
+        
+        if (classNames.length > 0) {
+          flowNode.className = classNames.join(' ')
         }
         return flowNode
       }))
     } else {
       setNodes([])
     }
-  }, [currentQuest, searchResultNodeIds])
+  }, [currentQuest, searchResultNodeIds, simulationNodeId, isSimulationOpen])
 
   // Pan to focused node when focusNodeId changes
   useEffect(() => {

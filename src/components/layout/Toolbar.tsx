@@ -9,7 +9,8 @@ import {
   Loader2,
   RefreshCw,
   LayoutGrid,
-  Search
+  Search,
+  Play
 } from 'lucide-react'
 import { useProjectStore } from '@/stores/projectStore'
 import { useUIStore } from '@/stores/uiStore'
@@ -43,7 +44,7 @@ export function Toolbar() {
     applyAutoLayout,
     importQuest
   } = useProjectStore()
-  const { setValidating, setValidationPanelOpen, openSearch } = useUIStore()
+  const { setValidating, setValidationPanelOpen, openSearch, startSimulation } = useUIStore()
   
   const [isSaving, setIsSaving] = useState(false)
   const [validationResult, setValidationResult] = useState<'valid' | 'invalid' | null>(null)
@@ -129,6 +130,19 @@ export function Toolbar() {
     
     const positions = autoLayoutQuest(currentQuest)
     applyAutoLayout(positions)
+  }
+
+  const handlePreview = () => {
+    if (!currentQuest || currentQuest.nodes.length === 0) return
+    
+    // Find the START node
+    const startNode = currentQuest.nodes.find(n => n.type === 'START')
+    if (startNode) {
+      startSimulation(startNode.id)
+    } else if (currentQuest.nodes.length > 0) {
+      // If no START node, use the first node
+      startSimulation(currentQuest.nodes[0].id)
+    }
   }
 
   const handleImportQuest = async () => {
@@ -322,6 +336,21 @@ export function Toolbar() {
       >
         <Search className="w-4 h-4" />
         <span className="hidden sm:inline">Search</span>
+      </button>
+
+      <div className="w-px h-5 bg-panel-border mx-1" />
+
+      {/* Preview/Simulate */}
+      <button
+        onClick={handlePreview}
+        disabled={!currentQuest || currentQuest.nodes.length === 0}
+        className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-text-secondary 
+                   hover:text-text-primary hover:bg-sidebar-hover rounded transition-colors
+                   disabled:opacity-50"
+        title="Preview quest"
+      >
+        <Play className="w-4 h-4" />
+        <span className="hidden sm:inline">Preview</span>
       </button>
       </div>
 
