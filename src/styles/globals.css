@@ -222,3 +222,30 @@ textarea {
   -webkit-app-region: no-drag;
 }
 
+/* Slow spin animation for auto-save indicator */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+/* Search match highlight */
+@keyframes search-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(74, 158, 255, 0.4);
+  }
+}
+
+.react-flow__node.search-match .quest-node {
+  animation: search-pulse 1.5s ease-in-out infinite;
+}
