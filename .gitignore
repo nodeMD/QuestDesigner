@@ -35,3 +35,10 @@ yarn-error.log*
 # Electron
 out/
 
+# Test coverage
+coverage/
+
+# Playwright
+playwright-report/
+test-results/
+
