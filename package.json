@@ -6,9 +6,10 @@
   "author": "Quest Designer Team",
   "license": "MIT",
   "overrides": {
-    "glob": "^11.0.0",
+    "glob": "^13.0.0",
     "rimraf": "^6.0.0",
-    "inflight": "npm:lru-cache@^11.0.0"
+    "inflight": "npm:lru-cache@^11.0.0",
+    "global-agent": "^4.1.2"
   },
   "scripts": {
     "dev": "vite",
@@ -33,7 +34,7 @@
     "@vitejs/plugin-react": "^4.4.0",
     "autoprefixer": "^10.4.20",
     "concurrently": "^9.0.0",
-    "electron": "^33.0.0",
+    "electron": "^40.2.1",
     "electron-builder": "^26.7.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
