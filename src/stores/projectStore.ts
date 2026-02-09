@@ -7,7 +7,6 @@ import type {
   Connection, 
   GlobalEvent,
   NodeType,
-  Option,
   Position
 } from '@/types'
 
@@ -20,6 +19,9 @@ interface ProjectState {
   // File state
   filePath: string | null
   isDirty: boolean
+  
+  // Clipboard for copy/paste
+  clipboard: QuestNode[] | null
   
   // Actions
   createProject: (name: string) => void
@@ -39,6 +41,10 @@ interface ProjectState {
   updateNode: (nodeId: string, updates: Partial<QuestNode>) => void
   deleteNode: (nodeId: string) => void
   selectNode: (nodeId: string | null) => void
+  
+  // Copy/paste actions
+  copyNode: (nodeId: string) => void
+  pasteNode: (position: Position) => QuestNode | null
   
   // Connection actions
   addConnection: (connection: Omit<Connection, 'id'>) => void
@@ -157,6 +163,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   selectedNodeId: null,
   filePath: null,
   isDirty: false,
+  clipboard: null,
 
   createProject: (name) => {
     const project = createDefaultProject(name)
@@ -315,6 +322,49 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   },
 
   selectNode: (nodeId) => set({ selectedNodeId: nodeId }),
+
+  copyNode: (nodeId) => {
+    const node = get().getNode(nodeId)
+    if (node) {
+      set({ clipboard: [{ ...node }] })
+    }
+  },
+
+  pasteNode: (position) => {
+    const { clipboard, project, currentQuestId } = get()
+    if (!clipboard || clipboard.length === 0 || !project || !currentQuestId) return null
+
+    const originalNode = clipboard[0]
+    // Create a new node with a new ID but same properties
+    const newNode: QuestNode = {
+      ...originalNode,
+      id: uuid(),
+      position,
+      // Generate new IDs for options if they exist
+      ...('options' in originalNode && {
+        options: originalNode.options.map(opt => ({
+          ...opt,
+          id: uuid(),
+        })),
+      }),
+    }
+
+    set({
+      project: {
+        ...project,
+        quests: project.quests.map((q) =>
+          q.id === currentQuestId
+            ? { ...q, nodes: [...q.nodes, newNode], updatedAt: new Date() }
+            : q
+        ),
+        updatedAt: new Date(),
+      },
+      selectedNodeId: newNode.id,
+      isDirty: true,
+    })
+
+    return newNode
+  },
 
   addConnection: (connection) => {
     const { project, currentQuestId } = get()

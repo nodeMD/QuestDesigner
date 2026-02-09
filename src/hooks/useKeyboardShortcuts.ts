@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { useProjectStore } from '@/stores/projectStore'
 import { useUIStore } from '@/stores/uiStore'
 import { exportProject, toJsonString, downloadJson } from '@/utils/export'
@@ -12,7 +12,10 @@ export function useKeyboardShortcuts() {
     filePath, 
     setFilePath, 
     setDirty,
-    getCurrentQuest 
+    getCurrentQuest,
+    copyNode,
+    pasteNode,
+    getNode
   } = useProjectStore()
   const { 
     openDeleteModal, 
@@ -69,6 +72,22 @@ export function useKeyboardShortcuts() {
     }
   }, [selectedNodeId, openDeleteModal])
 
+
+  const handleCopy = useCallback(() => {
+    if (selectedNodeId) {
+      copyNode(selectedNodeId)
+    }
+  }, [selectedNodeId, copyNode])
+
+  const handlePaste = useCallback(() => {
+    // Paste at a slight offset from the original position
+    const node = selectedNodeId ? getNode(selectedNodeId) : null
+    const position = node 
+      ? { x: node.position.x + 50, y: node.position.y + 50 }
+      : { x: 100, y: 100 }
+    pasteNode(position)
+  }, [selectedNodeId, getNode, pasteNode])
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isMod = e.metaKey || e.ctrlKey
@@ -91,6 +110,34 @@ export function useKeyboardShortcuts() {
       if (isMod && e.key === 't') {
         e.preventDefault()
         handleValidate()
+        return
+      }
+
+      // Cmd/Ctrl + C: Copy
+      if (isMod && e.key === 'c') {
+        // Don't prevent default if user is selecting text
+        if (
+          document.activeElement?.tagName === 'INPUT' ||
+          document.activeElement?.tagName === 'TEXTAREA'
+        ) {
+          return
+        }
+        e.preventDefault()
+        handleCopy()
+        return
+      }
+
+      // Cmd/Ctrl + V: Paste
+      if (isMod && e.key === 'v') {
+        // Don't prevent default if user is pasting text
+        if (
+          document.activeElement?.tagName === 'INPUT' ||
+          document.activeElement?.tagName === 'TEXTAREA'
+        ) {
+          return
+        }
+        e.preventDefault()
+        handlePaste()
         return
       }
 
@@ -117,6 +164,6 @@ export function useKeyboardShortcuts() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleSave, handleExport, handleValidate, handleDelete, selectedNodeId, setValidationPanelOpen])
+  }, [handleSave, handleExport, handleValidate, handleDelete, handleCopy, handlePaste, selectedNodeId, setValidationPanelOpen])
 }
 
