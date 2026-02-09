@@ -12,15 +12,15 @@ interface SearchResult {
  */
 export function searchNodes(quest: Quest, query: string): SearchResult[] {
   if (!query.trim()) return []
-  
+
   const normalizedQuery = query.toLowerCase().trim()
   const results: SearchResult[] = []
-  
+
   for (const node of quest.nodes) {
     const nodeMatches = getNodeMatches(node, normalizedQuery)
     results.push(...nodeMatches)
   }
-  
+
   return results
 }
 
@@ -29,7 +29,7 @@ export function searchNodes(quest: Quest, query: string): SearchResult[] {
  */
 function getNodeMatches(node: QuestNode, query: string): SearchResult[] {
   const matches: SearchResult[] = []
-  
+
   // Check node name (may be undefined for some nodes)
   const nodeName = (node as { name?: string }).name
   if (nodeName && nodeName.toLowerCase().includes(query)) {
@@ -39,7 +39,7 @@ function getNodeMatches(node: QuestNode, query: string): SearchResult[] {
       matchedText: nodeName,
     })
   }
-  
+
   switch (node.type) {
     case 'START': {
       const startNode = node as { title?: string; description?: string }
@@ -59,9 +59,13 @@ function getNodeMatches(node: QuestNode, query: string): SearchResult[] {
       }
       break
     }
-    
+
     case 'DIALOGUE': {
-      const dialogueNode = node as { speaker?: string; text?: string; options?: { label?: string }[] }
+      const dialogueNode = node as {
+        speaker?: string
+        text?: string
+        options?: { label?: string }[]
+      }
       if (dialogueNode.speaker?.toLowerCase().includes(query)) {
         matches.push({
           nodeId: node.id,
@@ -88,7 +92,7 @@ function getNodeMatches(node: QuestNode, query: string): SearchResult[] {
       })
       break
     }
-    
+
     case 'CHOICE': {
       const choiceNode = node as { prompt?: string; options?: { label?: string }[] }
       if (choiceNode.prompt?.toLowerCase().includes(query)) {
@@ -109,7 +113,7 @@ function getNodeMatches(node: QuestNode, query: string): SearchResult[] {
       })
       break
     }
-    
+
     case 'EVENT': {
       const eventNode = node as { eventName?: string }
       if (eventNode.eventName?.toLowerCase().includes(query)) {
@@ -121,7 +125,7 @@ function getNodeMatches(node: QuestNode, query: string): SearchResult[] {
       }
       break
     }
-    
+
     case 'END': {
       const endNode = node as { title?: string; description?: string }
       if (endNode.title?.toLowerCase().includes(query)) {
@@ -140,7 +144,7 @@ function getNodeMatches(node: QuestNode, query: string): SearchResult[] {
       }
       break
     }
-    
+
     case 'IF': {
       const ifNode = node as { condition?: string }
       if (ifNode.condition?.toLowerCase().includes(query)) {
@@ -153,7 +157,7 @@ function getNodeMatches(node: QuestNode, query: string): SearchResult[] {
       break
     }
   }
-  
+
   return matches
 }
 

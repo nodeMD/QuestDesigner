@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import { searchNodes, getUniqueNodeIds } from './search'
-import type { Quest, StartNode, DialogueNode, ChoiceNode, EventNode, EndNode, IfNode } from '@/types'
+import type {
+  Quest,
+  StartNode,
+  DialogueNode,
+  ChoiceNode,
+  EventNode,
+  EndNode,
+  IfNode,
+} from '@/types'
 
 // Helper to create a minimal quest
 function createQuest(nodes: Quest['nodes']): Quest {
@@ -91,29 +99,27 @@ describe('searchNodes', () => {
   describe('empty query handling', () => {
     it('should return empty array for empty query', () => {
       const quest = createQuest([createStartNode()])
-      
+
       const results = searchNodes(quest, '')
-      
+
       expect(results).toEqual([])
     })
 
     it('should return empty array for whitespace-only query', () => {
       const quest = createQuest([createStartNode()])
-      
+
       const results = searchNodes(quest, '   ')
-      
+
       expect(results).toEqual([])
     })
   })
 
   describe('START node search', () => {
     it('should find START node by title', () => {
-      const quest = createQuest([
-        createStartNode({ title: 'The Beginning' }),
-      ])
-      
+      const quest = createQuest([createStartNode({ title: 'The Beginning' })])
+
       const results = searchNodes(quest, 'beginning')
-      
+
       expect(results).toContainEqual(
         expect.objectContaining({
           nodeId: 'start-1',
@@ -124,12 +130,10 @@ describe('searchNodes', () => {
     })
 
     it('should find START node by description', () => {
-      const quest = createQuest([
-        createStartNode({ description: 'Your journey starts here' }),
-      ])
-      
+      const quest = createQuest([createStartNode({ description: 'Your journey starts here' })])
+
       const results = searchNodes(quest, 'journey')
-      
+
       expect(results).toContainEqual(
         expect.objectContaining({
           nodeId: 'start-1',
@@ -142,12 +146,10 @@ describe('searchNodes', () => {
 
   describe('DIALOGUE node search', () => {
     it('should find DIALOGUE node by speaker', () => {
-      const quest = createQuest([
-        createDialogueNode({ speaker: 'Gandalf' }),
-      ])
-      
+      const quest = createQuest([createDialogueNode({ speaker: 'Gandalf' })])
+
       const results = searchNodes(quest, 'gandalf')
-      
+
       expect(results).toContainEqual(
         expect.objectContaining({
           nodeId: 'dialogue-1',
@@ -158,12 +160,10 @@ describe('searchNodes', () => {
     })
 
     it('should find DIALOGUE node by text', () => {
-      const quest = createQuest([
-        createDialogueNode({ text: 'Hello adventurer' }),
-      ])
-      
+      const quest = createQuest([createDialogueNode({ text: 'Hello adventurer' })])
+
       const results = searchNodes(quest, 'adventurer')
-      
+
       expect(results).toContainEqual(
         expect.objectContaining({
           nodeId: 'dialogue-1',
@@ -179,9 +179,9 @@ describe('searchNodes', () => {
           options: [{ id: 'opt-1', label: 'Goodbye friend' }],
         }),
       ])
-      
+
       const results = searchNodes(quest, 'goodbye')
-      
+
       expect(results).toContainEqual(
         expect.objectContaining({
           nodeId: 'dialogue-1',
@@ -194,12 +194,10 @@ describe('searchNodes', () => {
 
   describe('CHOICE node search', () => {
     it('should find CHOICE node by prompt', () => {
-      const quest = createQuest([
-        createChoiceNode({ prompt: 'Choose your destiny' }),
-      ])
-      
+      const quest = createQuest([createChoiceNode({ prompt: 'Choose your destiny' })])
+
       const results = searchNodes(quest, 'destiny')
-      
+
       expect(results).toContainEqual(
         expect.objectContaining({
           nodeId: 'choice-1',
@@ -218,9 +216,9 @@ describe('searchNodes', () => {
           ],
         }),
       ])
-      
+
       const results = searchNodes(quest, 'dragon')
-      
+
       expect(results).toContainEqual(
         expect.objectContaining({
           nodeId: 'choice-1',
@@ -233,12 +231,10 @@ describe('searchNodes', () => {
 
   describe('EVENT node search', () => {
     it('should find EVENT node by event name', () => {
-      const quest = createQuest([
-        createEventNode({ eventName: 'BossDefeated' }),
-      ])
-      
+      const quest = createQuest([createEventNode({ eventName: 'BossDefeated' })])
+
       const results = searchNodes(quest, 'boss')
-      
+
       expect(results).toContainEqual(
         expect.objectContaining({
           nodeId: 'event-1',
@@ -251,12 +247,10 @@ describe('searchNodes', () => {
 
   describe('END node search', () => {
     it('should find END node by title', () => {
-      const quest = createQuest([
-        createEndNode({ title: 'Victory Achieved' }),
-      ])
-      
+      const quest = createQuest([createEndNode({ title: 'Victory Achieved' })])
+
       const results = searchNodes(quest, 'victory')
-      
+
       expect(results).toContainEqual(
         expect.objectContaining({
           nodeId: 'end-1',
@@ -267,12 +261,10 @@ describe('searchNodes', () => {
     })
 
     it('should find END node by description', () => {
-      const quest = createQuest([
-        createEndNode({ description: 'The kingdom is saved' }),
-      ])
-      
+      const quest = createQuest([createEndNode({ description: 'The kingdom is saved' })])
+
       const results = searchNodes(quest, 'kingdom')
-      
+
       expect(results).toContainEqual(
         expect.objectContaining({
           nodeId: 'end-1',
@@ -285,12 +277,10 @@ describe('searchNodes', () => {
 
   describe('IF node search', () => {
     it('should find IF node by condition', () => {
-      const quest = createQuest([
-        createIfNode({ condition: 'hasItem("sword")' }),
-      ])
-      
+      const quest = createQuest([createIfNode({ condition: 'hasItem("sword")' })])
+
       const results = searchNodes(quest, 'sword')
-      
+
       expect(results).toContainEqual(
         expect.objectContaining({
           nodeId: 'if-1',
@@ -303,23 +293,19 @@ describe('searchNodes', () => {
 
   describe('case insensitivity', () => {
     it('should match regardless of case', () => {
-      const quest = createQuest([
-        createDialogueNode({ speaker: 'GANDALF' }),
-      ])
-      
+      const quest = createQuest([createDialogueNode({ speaker: 'GANDALF' })])
+
       const results = searchNodes(quest, 'gandalf')
-      
+
       expect(results).toHaveLength(1)
       expect(results[0].matchedText).toBe('GANDALF')
     })
 
     it('should find with uppercase query', () => {
-      const quest = createQuest([
-        createDialogueNode({ speaker: 'gandalf' }),
-      ])
-      
+      const quest = createQuest([createDialogueNode({ speaker: 'gandalf' })])
+
       const results = searchNodes(quest, 'GANDALF')
-      
+
       expect(results).toHaveLength(1)
     })
   })
@@ -332,9 +318,9 @@ describe('searchNodes', () => {
           text: 'Complete the quest for a reward',
         }),
       ])
-      
+
       const results = searchNodes(quest, 'quest')
-      
+
       // Should match both speaker and text
       expect(results.length).toBeGreaterThanOrEqual(2)
     })
@@ -345,21 +331,19 @@ describe('searchNodes', () => {
         createDialogueNode({ speaker: 'Dragon' }),
         createEndNode({ title: 'Dragon Defeated' }),
       ])
-      
+
       const results = searchNodes(quest, 'dragon')
-      
+
       expect(results.length).toBe(3)
     })
   })
 
   describe('partial matches', () => {
     it('should find partial word matches', () => {
-      const quest = createQuest([
-        createDialogueNode({ speaker: 'Adventurer' }),
-      ])
-      
+      const quest = createQuest([createDialogueNode({ speaker: 'Adventurer' })])
+
       const results = searchNodes(quest, 'advent')
-      
+
       expect(results).toHaveLength(1)
     })
   })
@@ -372,9 +356,9 @@ describe('getUniqueNodeIds', () => {
       { nodeId: 'node-1', matchType: 'content' as const, matchedText: 'Test content' },
       { nodeId: 'node-2', matchType: 'name' as const, matchedText: 'Another' },
     ]
-    
+
     const uniqueIds = getUniqueNodeIds(results)
-    
+
     expect(uniqueIds).toHaveLength(2)
     expect(uniqueIds).toContain('node-1')
     expect(uniqueIds).toContain('node-2')
@@ -382,7 +366,7 @@ describe('getUniqueNodeIds', () => {
 
   it('should return empty array for empty results', () => {
     const uniqueIds = getUniqueNodeIds([])
-    
+
     expect(uniqueIds).toEqual([])
   })
 })

@@ -8,7 +8,9 @@ export const StartNode = memo(({ data, selected, id }: NodeProps) => {
   const node = data as unknown as StartNodeType
 
   return (
-    <div className={`quest-node node-start group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
+    <div
+      className={`quest-node node-start group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}
+    >
       <NodeActions nodeId={id} />
       {/* Input handle */}
       <Handle
@@ -41,9 +43,7 @@ export const StartNode = memo(({ data, selected, id }: NodeProps) => {
             <div className="flex items-center gap-2 text-xs text-text-secondary">
               <User className="w-3 h-3" />
               <span>{node.npc.name}</span>
-              {node.npc.type && (
-                <span className="text-text-muted">({node.npc.type})</span>
-              )}
+              {node.npc.type && <span className="text-text-muted">({node.npc.type})</span>}
             </div>
           )}
         </div>
@@ -51,9 +51,7 @@ export const StartNode = memo(({ data, selected, id }: NodeProps) => {
 
       {/* Description */}
       <div className="quest-node-content">
-        <p className="text-text-primary text-sm line-clamp-3">
-          "{node.description}"
-        </p>
+        <p className="text-text-primary text-sm line-clamp-3">"{node.description}"</p>
       </div>
 
       {/* Options */}
@@ -78,4 +76,3 @@ export const StartNode = memo(({ data, selected, id }: NodeProps) => {
 })
 
 StartNode.displayName = 'StartNode'
-

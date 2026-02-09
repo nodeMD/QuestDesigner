@@ -1,10 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
-import {
-  BaseEdge,
-  EdgeLabelRenderer,
-  getSmoothStepPath,
-  type EdgeProps,
-} from '@xyflow/react'
+import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, type EdgeProps } from '@xyflow/react'
 import { X } from 'lucide-react'
 import { useUIStore } from '@/stores/uiStore'
 
@@ -64,7 +59,7 @@ export function DeletableEdge({
         onMouseLeave={handleMouseLeave}
         style={{ cursor: 'pointer' }}
       />
-      
+
       {/* Visible edge */}
       <BaseEdge
         path={edgePath}
@@ -75,7 +70,7 @@ export function DeletableEdge({
           transition: 'stroke-width 0.15s ease',
         }}
       />
-      
+
       {/* Delete button - always rendered but visibility controlled */}
       <EdgeLabelRenderer>
         <div
@@ -103,4 +98,3 @@ export function DeletableEdge({
     </>
   )
 }
-

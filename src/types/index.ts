@@ -133,14 +133,14 @@ export interface EndNode extends BaseNode {
 }
 
 // Union of all node types
-export type QuestNode = 
-  | StartNode 
-  | DialogueNode 
-  | ChoiceNode 
-  | EventNode 
-  | IfNode 
-  | AndNode 
-  | OrNode 
+export type QuestNode =
+  | StartNode
+  | DialogueNode
+  | ChoiceNode
+  | EventNode
+  | IfNode
+  | AndNode
+  | OrNode
   | EndNode
 
 // Quest definition
@@ -205,4 +205,3 @@ export interface ValidationIssue {
   nodeId?: string
   optionId?: string
 }
-

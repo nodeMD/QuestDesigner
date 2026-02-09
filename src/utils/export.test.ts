@@ -65,9 +65,9 @@ function createProject(overrides: Partial<Project> = {}): Project {
 describe('exportQuest', () => {
   it('should export quest with version and timestamp', () => {
     const quest = createQuest()
-    
+
     const exported = exportQuest(quest)
-    
+
     expect(exported.version).toBe('1.0.0')
     expect(exported.exportedAt).toBeDefined()
     expect(new Date(exported.exportedAt).getTime()).not.toBeNaN()
@@ -79,9 +79,9 @@ describe('exportQuest', () => {
       name: 'My Quest',
       description: 'Description here',
     })
-    
+
     const exported = exportQuest(quest)
-    
+
     expect(exported.quest.id).toBe('my-quest')
     expect(exported.quest.name).toBe('My Quest')
     expect(exported.quest.description).toBe('Description here')
@@ -89,14 +89,11 @@ describe('exportQuest', () => {
 
   it('should export nodes with position', () => {
     const quest = createQuest({
-      nodes: [
-        createStartNode(),
-        createEndNode(),
-      ],
+      nodes: [createStartNode(), createEndNode()],
     })
-    
+
     const exported = exportQuest(quest)
-    
+
     expect(exported.quest.nodes).toHaveLength(2)
     expect(exported.quest.nodes[0].position).toEqual({ x: 0, y: 0 })
     expect(exported.quest.nodes[1].position).toEqual({ x: 200, y: 0 })
@@ -114,9 +111,9 @@ describe('exportQuest', () => {
         },
       ],
     })
-    
+
     const exported = exportQuest(quest)
-    
+
     expect(exported.quest.connections).toHaveLength(1)
     expect(exported.quest.connections[0]).toEqual({
       id: 'conn-1',
@@ -131,18 +128,18 @@ describe('exportQuest', () => {
 describe('exportProject', () => {
   it('should export project with version and timestamp', () => {
     const project = createProject()
-    
+
     const exported = exportProject(project)
-    
+
     expect(exported.version).toBe('1.0.0')
     expect(exported.exportedAt).toBeDefined()
   })
 
   it('should export project name', () => {
     const project = createProject({ name: 'My Game Quests' })
-    
+
     const exported = exportProject(project)
-    
+
     expect(exported.project.name).toBe('My Game Quests')
   })
 
@@ -153,9 +150,9 @@ describe('exportProject', () => {
         createQuest({ id: 'quest-2', name: 'Quest 2' }),
       ],
     })
-    
+
     const exported = exportProject(project)
-    
+
     expect(exported.project.quests).toHaveLength(2)
     expect(exported.project.quests[0].name).toBe('Quest 1')
     expect(exported.project.quests[1].name).toBe('Quest 2')
@@ -177,9 +174,9 @@ describe('exportProject', () => {
         },
       ],
     })
-    
+
     const exported = exportProject(project)
-    
+
     expect(exported.project.events).toHaveLength(1)
     expect(exported.project.events[0].name).toBe('PlayerLevelUp')
     expect(exported.project.events[0].parameters).toHaveLength(1)
@@ -191,9 +188,9 @@ describe('toJsonString', () => {
   it('should convert exported quest to formatted JSON', () => {
     const quest = createQuest({ name: 'Test' })
     const exported = exportQuest(quest)
-    
+
     const jsonString = toJsonString(exported)
-    
+
     expect(jsonString).toContain('"name": "Test"')
     expect(jsonString).toContain('\n') // Should be formatted with newlines
   })
@@ -202,7 +199,7 @@ describe('toJsonString', () => {
     const quest = createQuest()
     const exported = exportQuest(quest)
     const jsonString = toJsonString(exported)
-    
+
     expect(() => JSON.parse(jsonString)).not.toThrow()
   })
 })
@@ -229,9 +226,9 @@ describe('parseImportedQuest', () => {
         connections: [],
       },
     })
-    
+
     const quest = parseImportedQuest(exportedJson)
-    
+
     expect(quest).not.toBeNull()
     expect(quest!.name).toBe('Imported Quest (Imported)')
     expect(quest!.nodes).toHaveLength(1)
@@ -253,9 +250,9 @@ describe('parseImportedQuest', () => {
       ],
       connections: [],
     })
-    
+
     const quest = parseImportedQuest(rawQuestJson)
-    
+
     expect(quest).not.toBeNull()
     expect(quest!.name).toBe('Raw Quest (Imported)')
   })
@@ -266,17 +263,28 @@ describe('parseImportedQuest', () => {
         id: 'quest-1',
         name: 'Quest',
         nodes: [
-          { id: 'old-node-1', type: 'START', position: { x: 0, y: 0 }, title: 'Start', description: '', options: [] },
-          { id: 'old-node-2', type: 'END', position: { x: 100, y: 0 }, title: 'End', outcome: 'SUCCESS' },
+          {
+            id: 'old-node-1',
+            type: 'START',
+            position: { x: 0, y: 0 },
+            title: 'Start',
+            description: '',
+            options: [],
+          },
+          {
+            id: 'old-node-2',
+            type: 'END',
+            position: { x: 100, y: 0 },
+            title: 'End',
+            outcome: 'SUCCESS',
+          },
         ],
-        connections: [
-          { id: 'old-conn-1', sourceNodeId: 'old-node-1', targetNodeId: 'old-node-2' },
-        ],
+        connections: [{ id: 'old-conn-1', sourceNodeId: 'old-node-1', targetNodeId: 'old-node-2' }],
       },
     })
-    
+
     const quest = parseImportedQuest(exportedJson)
-    
+
     expect(quest).not.toBeNull()
     expect(quest!.nodes[0].id).not.toBe('old-node-1')
     expect(quest!.nodes[1].id).not.toBe('old-node-2')
@@ -287,13 +295,13 @@ describe('parseImportedQuest', () => {
 
   it('should return null for invalid JSON', () => {
     const result = parseImportedQuest('not valid json')
-    
+
     expect(result).toBeNull()
   })
 
   it('should return null for JSON without quest data', () => {
     const result = parseImportedQuest(JSON.stringify({ foo: 'bar' }))
-    
+
     expect(result).toBeNull()
   })
 
@@ -306,9 +314,9 @@ describe('parseImportedQuest', () => {
         connections: [],
       },
     })
-    
+
     const quest = parseImportedQuest(exportedJson)
-    
+
     expect(quest).not.toBeNull()
     expect(quest!.viewport).toEqual({ x: 0, y: 0, zoom: 1 })
     expect(quest!.createdAt).toBeInstanceOf(Date)

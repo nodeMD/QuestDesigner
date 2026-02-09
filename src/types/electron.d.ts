@@ -3,7 +3,10 @@ export {}
 declare global {
   interface Window {
     electronAPI?: {
-      saveFile: (data: string, filePath?: string) => Promise<{
+      saveFile: (
+        data: string,
+        filePath?: string
+      ) => Promise<{
         success: boolean
         filePath?: string
         canceled?: boolean
@@ -22,7 +25,10 @@ declare global {
         filePath?: string
         error?: string
       }>
-      exportFile: (data: string, defaultName: string) => Promise<{
+      exportFile: (
+        data: string,
+        defaultName: string
+      ) => Promise<{
         success: boolean
         filePath?: string
         canceled?: boolean
@@ -32,4 +38,3 @@ declare global {
     }
   }
 }
-

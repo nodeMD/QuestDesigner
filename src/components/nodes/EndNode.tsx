@@ -7,27 +7,23 @@ import { NodeActions } from './NodeActions'
 export const EndNode = memo(({ data, selected, id }: NodeProps) => {
   const node = data as unknown as EndNodeType
 
-  const OutcomeIcon = node.outcome === 'SUCCESS' 
-    ? Trophy 
-    : node.outcome === 'FAILURE' 
-      ? XCircle 
-      : Minus
+  const OutcomeIcon =
+    node.outcome === 'SUCCESS' ? Trophy : node.outcome === 'FAILURE' ? XCircle : Minus
 
-  const outcomeColor = node.outcome === 'SUCCESS'
-    ? 'text-node-start'
-    : node.outcome === 'FAILURE'
-      ? 'text-node-end'
-      : 'text-text-secondary'
+  const outcomeColor =
+    node.outcome === 'SUCCESS'
+      ? 'text-node-start'
+      : node.outcome === 'FAILURE'
+        ? 'text-node-end'
+        : 'text-text-secondary'
 
   return (
-    <div className={`quest-node node-end group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
+    <div
+      className={`quest-node node-end group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}
+    >
       <NodeActions nodeId={id} />
       {/* Input handle */}
-      <Handle
-        type="target"
-        position={Position.Left}
-        className="!bg-node-end !border-node-end"
-      />
+      <Handle type="target" position={Position.Left} className="!bg-node-end !border-node-end" />
 
       {/* Header */}
       <div className="quest-node-header header-end">
@@ -40,9 +36,7 @@ export const EndNode = memo(({ data, selected, id }: NodeProps) => {
       <div className="quest-node-content">
         <p className="text-text-primary font-medium">{node.title}</p>
         {node.description && (
-          <p className="text-text-secondary text-sm mt-1 line-clamp-2">
-            {node.description}
-          </p>
+          <p className="text-text-secondary text-sm mt-1 line-clamp-2">{node.description}</p>
         )}
       </div>
 
@@ -69,11 +63,12 @@ export const EndNode = memo(({ data, selected, id }: NodeProps) => {
             <span>Reputation</span>
           </div>
           {node.factionChanges.map((change, i) => (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className={`text-xs ${change.change >= 0 ? 'text-node-start' : 'text-node-end'}`}
             >
-              {change.factionName}: {change.change >= 0 ? '+' : ''}{change.change}
+              {change.factionName}: {change.change >= 0 ? '+' : ''}
+              {change.change}
             </div>
           ))}
         </div>
@@ -82,9 +77,7 @@ export const EndNode = memo(({ data, selected, id }: NodeProps) => {
       {/* Triggered events */}
       {node.triggeredEvents && node.triggeredEvents.length > 0 && (
         <div className="px-3 py-2 border-t border-panel-border">
-          <div className="text-xs text-text-muted">
-            Triggers: {node.triggeredEvents.join(', ')}
-          </div>
+          <div className="text-xs text-text-muted">Triggers: {node.triggeredEvents.join(', ')}</div>
         </div>
       )}
     </div>
@@ -92,4 +85,3 @@ export const EndNode = memo(({ data, selected, id }: NodeProps) => {
 })
 
 EndNode.displayName = 'EndNode'
-

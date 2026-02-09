@@ -8,7 +8,9 @@ export const ChoiceNode = memo(({ data, selected, id }: NodeProps) => {
   const node = data as unknown as ChoiceNodeType
 
   return (
-    <div className={`quest-node node-choice group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
+    <div
+      className={`quest-node node-choice group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}
+    >
       <NodeActions nodeId={id} />
       {/* Input handle */}
       <Handle
@@ -26,9 +28,7 @@ export const ChoiceNode = memo(({ data, selected, id }: NodeProps) => {
       {/* Prompt */}
       {node.prompt && (
         <div className="quest-node-content">
-          <p className="text-text-primary text-sm">
-            {node.prompt}
-          </p>
+          <p className="text-text-primary text-sm">{node.prompt}</p>
         </div>
       )}
 
@@ -54,4 +54,3 @@ export const ChoiceNode = memo(({ data, selected, id }: NodeProps) => {
 })
 
 ChoiceNode.displayName = 'ChoiceNode'
-

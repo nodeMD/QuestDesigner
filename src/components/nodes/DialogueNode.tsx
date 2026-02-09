@@ -8,7 +8,9 @@ export const DialogueNode = memo(({ data, selected, id }: NodeProps) => {
   const node = data as unknown as DialogueNodeType
 
   return (
-    <div className={`quest-node node-dialogue group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
+    <div
+      className={`quest-node node-dialogue group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}
+    >
       <NodeActions nodeId={id} />
       {/* Input handle */}
       <Handle
@@ -35,9 +37,7 @@ export const DialogueNode = memo(({ data, selected, id }: NodeProps) => {
 
       {/* Text content */}
       <div className="quest-node-content">
-        <p className="text-text-primary text-sm line-clamp-4">
-          "{node.text}"
-        </p>
+        <p className="text-text-primary text-sm line-clamp-4">"{node.text}"</p>
       </div>
 
       {/* Options */}
@@ -62,4 +62,3 @@ export const DialogueNode = memo(({ data, selected, id }: NodeProps) => {
 })
 
 DialogueNode.displayName = 'DialogueNode'
-

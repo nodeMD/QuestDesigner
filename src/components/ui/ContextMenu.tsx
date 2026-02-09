@@ -1,14 +1,14 @@
 import { useCallback } from 'react'
 import { useReactFlow } from '@xyflow/react'
-import { 
-  Play, 
-  MessageSquare, 
-  GitBranch, 
-  Zap, 
-  HelpCircle, 
-  GitMerge, 
+import {
+  Play,
+  MessageSquare,
+  GitBranch,
+  Zap,
+  HelpCircle,
+  GitMerge,
   GitPullRequest,
-  Square 
+  Square,
 } from 'lucide-react'
 import { useProjectStore } from '@/stores/projectStore'
 import { useUIStore } from '@/stores/uiStore'
@@ -28,31 +28,36 @@ const nodeTypeOptions: { type: NodeType; label: string; icon: typeof Play; color
 export function ContextMenu() {
   const { contextMenu, closeContextMenu, openEditPanel } = useUIStore()
   const { addNode, currentQuestId } = useProjectStore()
-  
-  let screenToFlowPosition: (pos: { x: number; y: number }) => { x: number; y: number }
-  try {
-    const { screenToFlowPosition: stfp } = useReactFlow()
-    screenToFlowPosition = stfp
-  } catch {
-    // React Flow not ready, use identity function
-    screenToFlowPosition = (pos) => pos
-  }
 
-  const handleAddNode = useCallback((type: NodeType) => {
-    if (!currentQuestId) return
-    
-    // Convert screen position to flow position
-    const position = screenToFlowPosition({
-      x: contextMenu.position.x,
-      y: contextMenu.position.y,
-    })
-    
-    const node = addNode(type, position)
-    if (node) {
-      openEditPanel(node.id)
-    }
-    closeContextMenu()
-  }, [contextMenu.position, screenToFlowPosition, addNode, currentQuestId, openEditPanel, closeContextMenu])
+  // Get React Flow instance - must be called unconditionally
+  const reactFlowInstance = useReactFlow()
+  const screenToFlowPosition = reactFlowInstance?.screenToFlowPosition ?? ((pos) => pos)
+
+  const handleAddNode = useCallback(
+    (type: NodeType) => {
+      if (!currentQuestId) return
+
+      // Convert screen position to flow position
+      const position = screenToFlowPosition({
+        x: contextMenu.position.x,
+        y: contextMenu.position.y,
+      })
+
+      const node = addNode(type, position)
+      if (node) {
+        openEditPanel(node.id)
+      }
+      closeContextMenu()
+    },
+    [
+      contextMenu.position,
+      screenToFlowPosition,
+      addNode,
+      currentQuestId,
+      openEditPanel,
+      closeContextMenu,
+    ]
+  )
 
   if (!contextMenu.isOpen || contextMenu.type !== 'canvas') {
     return null
@@ -70,7 +75,7 @@ export function ContextMenu() {
       <div className="px-3 py-2 text-xs font-semibold text-text-muted uppercase tracking-wide">
         Add Node
       </div>
-      
+
       {nodeTypeOptions.map(({ type, label, icon: Icon, color }) => (
         <button
           key={type}
@@ -85,4 +90,3 @@ export function ContextMenu() {
     </div>
   )
 }
-

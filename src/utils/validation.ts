@@ -23,7 +23,7 @@ export function validateQuest(quest: Quest): ValidationIssue[] {
   })
 
   // Check for START node
-  const startNodes = quest.nodes.filter(n => n.type === 'START')
+  const startNodes = quest.nodes.filter((n) => n.type === 'START')
   if (startNodes.length === 0) {
     issues.push(createIssue('error', 'MISSING_START', 'Quest has no START node'))
   } else if (startNodes.length > 1) {
@@ -35,7 +35,7 @@ export function validateQuest(quest: Quest): ValidationIssue[] {
   const incomingConnections = new Map<string, Set<string>>() // nodeId -> Set of sourceNodeIds
   const optionConnections = new Map<string, string>() // optionId -> targetNodeId
 
-  quest.connections.forEach(conn => {
+  quest.connections.forEach((conn) => {
     // Track outgoing
     if (!outgoingConnections.has(conn.sourceNodeId)) {
       outgoingConnections.set(conn.sourceNodeId, new Set())
@@ -58,37 +58,43 @@ export function validateQuest(quest: Quest): ValidationIssue[] {
   })
 
   // Check each node
-  quest.nodes.forEach(node => {
+  quest.nodes.forEach((node) => {
     // Check for orphan nodes (no incoming connections, except START)
     if (node.type !== 'START' && !incomingConnections.has(node.id)) {
-      issues.push(createIssue(
-        'warning',
-        'ORPHAN_NODE',
-        `Node "${getNodeLabel(node)}" has no incoming connections`,
-        node.id
-      ))
+      issues.push(
+        createIssue(
+          'warning',
+          'ORPHAN_NODE',
+          `Node "${getNodeLabel(node)}" has no incoming connections`,
+          node.id
+        )
+      )
     }
 
     // Check options for unconnected outputs
     if ('options' in node && node.options) {
-      node.options.forEach(option => {
+      node.options.forEach((option) => {
         if (!optionConnections.has(option.id)) {
-          issues.push(createIssue(
-            'error',
-            'UNCONNECTED_OPTION',
-            `Option "${option.label}" in node "${getNodeLabel(node)}" has no connection`,
-            node.id,
-            option.id
-          ))
+          issues.push(
+            createIssue(
+              'error',
+              'UNCONNECTED_OPTION',
+              `Option "${option.label}" in node "${getNodeLabel(node)}" has no connection`,
+              node.id,
+              option.id
+            )
+          )
         }
         if (!option.label || option.label.trim() === '') {
-          issues.push(createIssue(
-            'warning',
-            'EMPTY_OPTION',
-            `Option in node "${getNodeLabel(node)}" has no label`,
-            node.id,
-            option.id
-          ))
+          issues.push(
+            createIssue(
+              'warning',
+              'EMPTY_OPTION',
+              `Option in node "${getNodeLabel(node)}" has no label`,
+              node.id,
+              option.id
+            )
+          )
         }
       })
     }
@@ -97,34 +103,44 @@ export function validateQuest(quest: Quest): ValidationIssue[] {
     if (node.type === 'IF' || (node.type === 'EVENT' && node.action === 'CHECK')) {
       const hasTrueOutput = optionConnections.has(`${node.id}-true`)
       const hasFalseOutput = optionConnections.has(`${node.id}-false`)
-      
+
       if (!hasTrueOutput) {
-        issues.push(createIssue(
-          'error',
-          'UNCONNECTED_OUTPUT',
-          `"True" output of "${getNodeLabel(node)}" has no connection`,
-          node.id
-        ))
+        issues.push(
+          createIssue(
+            'error',
+            'UNCONNECTED_OUTPUT',
+            `"True" output of "${getNodeLabel(node)}" has no connection`,
+            node.id
+          )
+        )
       }
       if (!hasFalseOutput) {
-        issues.push(createIssue(
-          'error',
-          'UNCONNECTED_OUTPUT',
-          `"False" output of "${getNodeLabel(node)}" has no connection`,
-          node.id
-        ))
+        issues.push(
+          createIssue(
+            'error',
+            'UNCONNECTED_OUTPUT',
+            `"False" output of "${getNodeLabel(node)}" has no connection`,
+            node.id
+          )
+        )
       }
     }
 
     // Check AND/OR/EVENT TRIGGER nodes for output
-    if (node.type === 'AND' || node.type === 'OR' || (node.type === 'EVENT' && node.action === 'TRIGGER')) {
+    if (
+      node.type === 'AND' ||
+      node.type === 'OR' ||
+      (node.type === 'EVENT' && node.action === 'TRIGGER')
+    ) {
       if (!outgoingConnections.has(node.id) || outgoingConnections.get(node.id)!.size === 0) {
-        issues.push(createIssue(
-          'error',
-          'DEAD_END',
-          `Node "${getNodeLabel(node)}" has no outgoing connection`,
-          node.id
-        ))
+        issues.push(
+          createIssue(
+            'error',
+            'DEAD_END',
+            `Node "${getNodeLabel(node)}" has no outgoing connection`,
+            node.id
+          )
+        )
       }
     }
   })
@@ -140,7 +156,7 @@ export function validateQuest(quest: Quest): ValidationIssue[] {
       visited.add(nodeId)
       reachable.add(nodeId)
 
-      const node = quest.nodes.find(n => n.id === nodeId)
+      const node = quest.nodes.find((n) => n.id === nodeId)
       if (!node) return
 
       // END and EVENT TRIGGER are valid termination points
@@ -155,8 +171,9 @@ export function validateQuest(quest: Quest): ValidationIssue[] {
         return
       }
 
-      outgoing.forEach(targetId => {
-        if (!path.includes(targetId)) { // Avoid infinite loops
+      outgoing.forEach((targetId) => {
+        if (!path.includes(targetId)) {
+          // Avoid infinite loops
           dfs(targetId, [...path, targetId])
         }
       })
@@ -165,14 +182,16 @@ export function validateQuest(quest: Quest): ValidationIssue[] {
     dfs(startNodes[0].id, [startNodes[0].id])
 
     // Report unreachable nodes
-    quest.nodes.forEach(node => {
+    quest.nodes.forEach((node) => {
       if (!reachable.has(node.id) && node.type !== 'START') {
-        issues.push(createIssue(
-          'warning',
-          'UNREACHABLE',
-          `Node "${getNodeLabel(node)}" cannot be reached from START`,
-          node.id
-        ))
+        issues.push(
+          createIssue(
+            'warning',
+            'UNREACHABLE',
+            `Node "${getNodeLabel(node)}" cannot be reached from START`,
+            node.id
+          )
+        )
       }
     })
   }
@@ -208,7 +227,7 @@ function getNodeLabel(node: QuestNode): string {
  * Check if quest has any errors (not just warnings)
  */
 export function hasErrors(issues: ValidationIssue[]): boolean {
-  return issues.some(issue => issue.severity === 'error')
+  return issues.some((issue) => issue.severity === 'error')
 }
 
 /**
@@ -217,4 +236,3 @@ export function hasErrors(issues: ValidationIssue[]): boolean {
 export function isQuestValid(quest: Quest): boolean {
   return !hasErrors(validateQuest(quest))
 }
-

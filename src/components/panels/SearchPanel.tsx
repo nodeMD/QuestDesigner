@@ -30,60 +30,63 @@ function getNodeDisplayName(node: QuestNode): string {
 }
 
 export function SearchPanel() {
-  const { 
-    isSearchOpen, 
-    searchQuery, 
+  const {
+    isSearchOpen,
+    searchQuery,
     searchResultNodeIds,
-    setSearchQuery, 
-    setSearchResults, 
+    setSearchQuery,
+    setSearchResults,
     closeSearch,
-    focusOnNode 
+    focusOnNode,
   } = useUIStore()
-  
+
   const { getCurrentQuest, selectNode } = useProjectStore()
   const currentQuest = getCurrentQuest()
   const inputRef = useRef<HTMLInputElement>(null)
-  
+
   // Focus input when search opens
   useEffect(() => {
     if (isSearchOpen && inputRef.current) {
       inputRef.current.focus()
     }
   }, [isSearchOpen])
-  
+
   // Search when query changes
   useEffect(() => {
     if (!currentQuest || !searchQuery.trim()) {
       setSearchResults([])
       return
     }
-    
+
     const results = searchNodes(currentQuest, searchQuery)
     const nodeIds = getUniqueNodeIds(results)
     setSearchResults(nodeIds)
   }, [searchQuery, currentQuest, setSearchResults])
-  
+
   // Handle keyboard shortcuts
   useEffect(() => {
     if (!isSearchOpen) return
-    
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         closeSearch()
       }
     }
-    
+
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isSearchOpen, closeSearch])
-  
-  const handleNodeClick = useCallback((nodeId: string) => {
-    selectNode(nodeId)
-    focusOnNode(nodeId)
-  }, [selectNode, focusOnNode])
-  
+
+  const handleNodeClick = useCallback(
+    (nodeId: string) => {
+      selectNode(nodeId)
+      focusOnNode(nodeId)
+    },
+    [selectNode, focusOnNode]
+  )
+
   if (!isSearchOpen) return null
-  
+
   return (
     <div className="absolute top-12 left-1/2 -translate-x-1/2 z-50 w-96 max-w-[90vw]">
       <div className="bg-panel-bg border border-panel-border rounded-lg shadow-panel overflow-hidden">
@@ -114,23 +117,22 @@ export function SearchPanel() {
             <X className="w-4 h-4" />
           </button>
         </div>
-        
+
         {/* Results */}
         {searchQuery && (
           <div className="max-h-64 overflow-y-auto">
             {searchResultNodeIds.length === 0 ? (
-              <div className="px-3 py-4 text-sm text-text-muted text-center">
-                No nodes found
-              </div>
+              <div className="px-3 py-4 text-sm text-text-muted text-center">No nodes found</div>
             ) : (
               <div className="py-1">
                 <div className="px-3 py-1 text-xs text-text-muted">
-                  {searchResultNodeIds.length} node{searchResultNodeIds.length !== 1 ? 's' : ''} found
+                  {searchResultNodeIds.length} node{searchResultNodeIds.length !== 1 ? 's' : ''}{' '}
+                  found
                 </div>
                 {searchResultNodeIds.map((nodeId) => {
                   const node = currentQuest?.nodes.find((n) => n.id === nodeId)
                   if (!node) return null
-                  
+
                   return (
                     <button
                       key={nodeId}
@@ -140,11 +142,11 @@ export function SearchPanel() {
                                  transition-colors"
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${getNodeColor(node.type)}`} />
+                        <span
+                          className={`w-2 h-2 rounded-full flex-shrink-0 ${getNodeColor(node.type)}`}
+                        />
                         <span className="truncate">{getNodeDisplayName(node)}</span>
-                        <span className="text-xs text-text-muted flex-shrink-0">
-                          ({node.type})
-                        </span>
+                        <span className="text-xs text-text-muted flex-shrink-0">({node.type})</span>
                       </div>
                       <ArrowRight className="w-4 h-4 flex-shrink-0 opacity-50" />
                     </button>
@@ -154,7 +156,7 @@ export function SearchPanel() {
             )}
           </div>
         )}
-        
+
         {/* Help text when empty */}
         {!searchQuery && (
           <div className="px-3 py-4 text-sm text-text-muted text-center">

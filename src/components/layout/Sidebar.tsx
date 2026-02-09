@@ -1,29 +1,29 @@
 import { useState, useEffect, useRef } from 'react'
-import { 
-  Plus, 
-  ScrollText, 
-  Zap, 
-  MoreHorizontal, 
-  Pencil, 
+import {
+  Plus,
+  ScrollText,
+  Zap,
+  MoreHorizontal,
+  Pencil,
   Trash2,
   ChevronRight,
   Check,
   X,
-  Settings
+  Settings,
 } from 'lucide-react'
 import { useProjectStore } from '@/stores/projectStore'
 import { useUIStore } from '@/stores/uiStore'
 
 export function Sidebar() {
-  const { 
-    project, 
-    currentQuestId, 
-    createQuest, 
-    selectQuest, 
+  const {
+    project,
+    currentQuestId,
+    createQuest,
+    selectQuest,
     updateQuest,
     createEvent,
     updateEvent,
-    renameProject
+    renameProject,
   } = useProjectStore()
   const { sidebarTab, setSidebarTab, openDeleteModal, openEventEditPanel } = useUIStore()
 
@@ -172,7 +172,7 @@ export function Sidebar() {
             </button>
           </div>
         ) : (
-          <h2 
+          <h2
             className="font-semibold text-text-primary truncate cursor-pointer hover:text-accent-blue transition-colors"
             onClick={handleStartProjectRename}
             title="Click to rename project"
@@ -187,9 +187,10 @@ export function Sidebar() {
         <button
           onClick={() => setSidebarTab('quests')}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors
-            ${sidebarTab === 'quests' 
-              ? 'text-accent-blue border-b-2 border-accent-blue bg-sidebar-hover/50' 
-              : 'text-text-secondary hover:text-text-primary hover:bg-sidebar-hover'
+            ${
+              sidebarTab === 'quests'
+                ? 'text-accent-blue border-b-2 border-accent-blue bg-sidebar-hover/50'
+                : 'text-text-secondary hover:text-text-primary hover:bg-sidebar-hover'
             }`}
         >
           <ScrollText className="w-4 h-4" />
@@ -198,9 +199,10 @@ export function Sidebar() {
         <button
           onClick={() => setSidebarTab('events')}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors
-            ${sidebarTab === 'events' 
-              ? 'text-accent-blue border-b-2 border-accent-blue bg-sidebar-hover/50' 
-              : 'text-text-secondary hover:text-text-primary hover:bg-sidebar-hover'
+            ${
+              sidebarTab === 'events'
+                ? 'text-accent-blue border-b-2 border-accent-blue bg-sidebar-hover/50'
+                : 'text-text-secondary hover:text-text-primary hover:bg-sidebar-hover'
             }`}
         >
           <Zap className="w-4 h-4" />
@@ -217,16 +219,22 @@ export function Sidebar() {
               <div
                 key={quest.id}
                 className={`group relative flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors
-                  ${currentQuestId === quest.id 
-                    ? 'bg-accent-blue/20 text-accent-blue' 
-                    : 'text-text-secondary hover:bg-sidebar-hover hover:text-text-primary'
+                  ${
+                    currentQuestId === quest.id
+                      ? 'bg-accent-blue/20 text-accent-blue'
+                      : 'text-text-secondary hover:bg-sidebar-hover hover:text-text-primary'
                   }`}
                 onClick={() => !renamingQuestId && selectQuest(quest.id)}
               >
-                <ChevronRight className={`w-4 h-4 transition-transform flex-shrink-0 ${currentQuestId === quest.id ? 'rotate-90' : ''}`} />
-                
+                <ChevronRight
+                  className={`w-4 h-4 transition-transform flex-shrink-0 ${currentQuestId === quest.id ? 'rotate-90' : ''}`}
+                />
+
                 {renamingQuestId === quest.id ? (
-                  <div className="flex-1 flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                  <div
+                    className="flex-1 flex items-center gap-1"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <input
                       ref={renameInputRef}
                       type="text"
@@ -266,10 +274,10 @@ export function Sidebar() {
                     </button>
                   </>
                 )}
-                
+
                 {/* Quest context menu */}
                 {contextMenuId === quest.id && !renamingQuestId && (
-                  <div 
+                  <div
                     className="absolute right-0 top-full mt-1 z-50 bg-panel-bg border border-panel-border rounded-md shadow-panel py-1 min-w-32"
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -314,10 +322,7 @@ export function Sidebar() {
                   autoFocus
                 />
                 <div className="flex gap-2 mt-2">
-                  <button
-                    onClick={handleAddQuest}
-                    className="btn btn-primary text-xs py-1"
-                  >
+                  <button onClick={handleAddQuest} className="btn btn-primary text-xs py-1">
                     Add
                   </button>
                   <button
@@ -370,13 +375,19 @@ export function Sidebar() {
                         onClick={(e) => e.stopPropagation()}
                       />
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleConfirmEventRename(); }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleConfirmEventRename()
+                        }}
                         className="p-0.5 text-node-start hover:bg-sidebar-hover rounded"
                       >
                         <Check className="w-3 h-3" />
                       </button>
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleCancelEventRename(); }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleCancelEventRename()
+                        }}
                         className="p-0.5 text-node-end hover:bg-sidebar-hover rounded"
                       >
                         <X className="w-3 h-3" />
@@ -393,7 +404,7 @@ export function Sidebar() {
                     </>
                   )}
                 </div>
-                
+
                 {/* Context menu button */}
                 {!renamingEventId && (
                   <button
@@ -409,7 +420,7 @@ export function Sidebar() {
 
                 {/* Context menu dropdown */}
                 {eventContextMenuId === event.id && !renamingEventId && (
-                  <div 
+                  <div
                     className="absolute right-0 top-full mt-1 z-50 bg-panel-bg border border-panel-border rounded-md shadow-panel py-1 min-w-32"
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -464,10 +475,7 @@ export function Sidebar() {
                   autoFocus
                 />
                 <div className="flex gap-2 mt-2">
-                  <button
-                    onClick={handleAddEvent}
-                    className="btn btn-primary text-xs py-1"
-                  >
+                  <button onClick={handleAddEvent} className="btn btn-primary text-xs py-1">
                     Add
                   </button>
                   <button
@@ -497,4 +505,3 @@ export function Sidebar() {
     </aside>
   )
 }
-

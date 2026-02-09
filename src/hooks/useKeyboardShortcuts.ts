@@ -5,31 +5,31 @@ import { exportProject, toJsonString, downloadJson } from '@/utils/export'
 import { validateQuest } from '@/utils/validation'
 
 export function useKeyboardShortcuts() {
-  const { 
-    project, 
-    selectedNodeId, 
-    filePath, 
-    setFilePath, 
+  const {
+    project,
+    selectedNodeId,
+    filePath,
+    setFilePath,
     setDirty,
     getCurrentQuest,
     copyNode,
     pasteNode,
-    getNode
+    getNode,
   } = useProjectStore()
-  const { 
-    openDeleteModal, 
+  const {
+    openDeleteModal,
     setValidationPanelOpen,
     setValidating,
     openSearch,
     isSearchOpen,
-    closeSearch
+    closeSearch,
   } = useUIStore()
 
   const handleSave = useCallback(async () => {
     if (!project) return
 
     const data = JSON.stringify(project, null, 2)
-    
+
     if (window.electronAPI) {
       const result = await window.electronAPI.saveFile(data, filePath || undefined)
       if (result.success && result.filePath) {
@@ -59,7 +59,7 @@ export function useKeyboardShortcuts() {
   const handleValidate = useCallback(() => {
     const currentQuest = getCurrentQuest()
     if (!currentQuest) return
-    
+
     setValidating(true)
     setTimeout(() => {
       validateQuest(currentQuest)
@@ -74,7 +74,6 @@ export function useKeyboardShortcuts() {
     }
   }, [selectedNodeId, openDeleteModal])
 
-
   const handleCopy = useCallback(() => {
     if (selectedNodeId) {
       copyNode(selectedNodeId)
@@ -84,7 +83,7 @@ export function useKeyboardShortcuts() {
   const handlePaste = useCallback(() => {
     // Paste at a slight offset from the original position
     const node = selectedNodeId ? getNode(selectedNodeId) : null
-    const position = node 
+    const position = node
       ? { x: node.position.x + 50, y: node.position.y + 50 }
       : { x: 100, y: 100 }
     pasteNode(position)
@@ -177,6 +176,17 @@ export function useKeyboardShortcuts() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleSave, handleExport, handleValidate, handleDelete, handleCopy, handlePaste, selectedNodeId, setValidationPanelOpen, openSearch, closeSearch, isSearchOpen])
+  }, [
+    handleSave,
+    handleExport,
+    handleValidate,
+    handleDelete,
+    handleCopy,
+    handlePaste,
+    selectedNodeId,
+    setValidationPanelOpen,
+    openSearch,
+    closeSearch,
+    isSearchOpen,
+  ])
 }
-

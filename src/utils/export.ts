@@ -55,12 +55,12 @@ export function exportQuest(quest: Quest): ExportedQuest {
       id: quest.id,
       name: quest.name,
       description: quest.description,
-      nodes: quest.nodes.map(node => ({
+      nodes: quest.nodes.map((node) => ({
         ...node,
         // Remove internal position tracking, keep only x/y
         position: { x: node.position.x, y: node.position.y },
       })),
-      connections: quest.connections.map(conn => ({
+      connections: quest.connections.map((conn) => ({
         id: conn.id,
         sourceNodeId: conn.sourceNodeId,
         sourceOptionId: conn.sourceOptionId,
@@ -80,15 +80,15 @@ export function exportProject(project: Project): ExportedProject {
     exportedAt: new Date().toISOString(),
     project: {
       name: project.name,
-      quests: project.quests.map(quest => ({
+      quests: project.quests.map((quest) => ({
         id: quest.id,
         name: quest.name,
         description: quest.description,
-        nodes: quest.nodes.map(node => ({
+        nodes: quest.nodes.map((node) => ({
           ...node,
           position: { x: node.position.x, y: node.position.y },
         })),
-        connections: quest.connections.map(conn => ({
+        connections: quest.connections.map((conn) => ({
           id: conn.id,
           sourceNodeId: conn.sourceNodeId,
           sourceOptionId: conn.sourceOptionId,
@@ -96,7 +96,7 @@ export function exportProject(project: Project): ExportedProject {
           targetNodeId: conn.targetNodeId,
         })),
       })),
-      events: project.events.map(event => ({
+      events: project.events.map((event) => ({
         id: event.id,
         name: event.name,
         description: event.description,
@@ -135,17 +135,17 @@ export function downloadJson(data: string, filename: string): void {
 export function parseImportedQuest(jsonString: string): Quest | null {
   try {
     const data = JSON.parse(jsonString)
-    
+
     // Check if it's an exported quest format
     if (data.quest) {
       return convertExportedQuestToQuest(data.quest)
     }
-    
+
     // Check if it's a raw quest format (from project file)
     if (data.nodes && data.connections && data.name) {
       return convertExportedQuestToQuest(data)
     }
-    
+
     return null
   } catch (e) {
     console.error('Failed to parse imported quest:', e)
@@ -159,12 +159,12 @@ export function parseImportedQuest(jsonString: string): Quest | null {
 function convertExportedQuestToQuest(exportedQuest: ExportedQuest['quest']): Quest {
   // Generate new IDs to avoid conflicts with existing quests
   const idMap = new Map<string, string>()
-  
+
   // Map old node IDs to new ones
   exportedQuest.nodes.forEach((node) => {
     idMap.set(node.id, uuid())
   })
-  
+
   // Convert nodes with new IDs
   const nodes: QuestNode[] = exportedQuest.nodes.map((node) => {
     const newNode: QuestNode = {
@@ -173,7 +173,7 @@ function convertExportedQuestToQuest(exportedQuest: ExportedQuest['quest']): Que
       type: node.type as QuestNode['type'],
       position: { x: node.position.x, y: node.position.y },
     } as QuestNode
-    
+
     // Update option IDs if the node has options
     if ('options' in newNode && Array.isArray((newNode as { options?: unknown[] }).options)) {
       const optionsNode = newNode as { options: Array<{ id: string; label: string }> }
@@ -186,14 +186,14 @@ function convertExportedQuestToQuest(exportedQuest: ExportedQuest['quest']): Que
       // Store option ID mapping for connections
       idMap.set(`options:${node.id}`, JSON.stringify(Object.fromEntries(newOptionIdMap)))
     }
-    
+
     return newNode
   })
-  
+
   // Convert connections with new IDs
   const connections: Connection[] = exportedQuest.connections.map((conn) => {
     let sourceOptionId = conn.sourceOptionId
-    
+
     // Update source option ID if present
     if (sourceOptionId) {
       const optionMapJson = idMap.get(`options:${conn.sourceNodeId}`)
@@ -202,7 +202,7 @@ function convertExportedQuestToQuest(exportedQuest: ExportedQuest['quest']): Que
         sourceOptionId = optionMap[sourceOptionId] || sourceOptionId
       }
     }
-    
+
     return {
       id: uuid(),
       sourceNodeId: idMap.get(conn.sourceNodeId) || conn.sourceNodeId,
@@ -212,9 +212,9 @@ function convertExportedQuestToQuest(exportedQuest: ExportedQuest['quest']): Que
       targetHandle: (conn as { targetHandle?: string }).targetHandle,
     }
   })
-  
+
   const defaultViewport: Viewport = { x: 0, y: 0, zoom: 1 }
-  
+
   return {
     id: uuid(),
     name: `${exportedQuest.name} (Imported)`,
