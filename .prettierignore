@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+dist-electron/
+release/
+
+# Test outputs
+coverage/
+playwright-report/
+test-results/
+
+# Other
+*.md
+*.json
+*.yml
+*.yaml
