@@ -1,20 +1,22 @@
 import { useReactFlow } from '@xyflow/react'
 import { Circle } from 'lucide-react'
 import { useProjectStore } from '@/stores/projectStore'
+import { useState, useEffect } from 'react'
 
 export function StatusBar() {
   const { project, currentQuestId, isDirty } = useProjectStore()
-  
-  // Try to get zoom level from React Flow, but handle case where it's not available
-  let zoom = 1
-  try {
-    const { getZoom } = useReactFlow()
-    zoom = getZoom()
-  } catch {
-    // React Flow not available yet
-  }
+  const [zoom, setZoom] = useState(1)
 
-  const currentQuest = project?.quests.find(q => q.id === currentQuestId)
+  // Get React Flow instance - must be called unconditionally
+  const reactFlowInstance = useReactFlow()
+
+  useEffect(() => {
+    if (reactFlowInstance) {
+      setZoom(reactFlowInstance.getZoom())
+    }
+  }, [reactFlowInstance])
+
+  const currentQuest = project?.quests.find((q) => q.id === currentQuestId)
   const nodeCount = currentQuest?.nodes.length ?? 0
   const connectionCount = currentQuest?.connections.length ?? 0
 
@@ -23,8 +25,8 @@ export function StatusBar() {
       <div className="flex items-center gap-4">
         {/* Save status */}
         <div className="flex items-center gap-1.5">
-          <Circle 
-            className={`w-2 h-2 ${isDirty ? 'fill-node-event text-node-event' : 'fill-node-start text-node-start'}`} 
+          <Circle
+            className={`w-2 h-2 ${isDirty ? 'fill-node-event text-node-event' : 'fill-node-start text-node-start'}`}
           />
           <span>{isDirty ? 'Unsaved changes' : 'Saved'}</span>
         </div>
@@ -46,12 +48,7 @@ export function StatusBar() {
       </div>
 
       {/* Right side - current quest */}
-      <div className="ml-auto">
-        {currentQuest && (
-          <span>Editing: {currentQuest.name}</span>
-        )}
-      </div>
+      <div className="ml-auto">{currentQuest && <span>Editing: {currentQuest.name}</span>}</div>
     </footer>
   )
 }
-

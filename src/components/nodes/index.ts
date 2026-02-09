@@ -4,4 +4,3 @@ export { ChoiceNode } from './ChoiceNode'
 export { EventNode } from './EventNode'
 export { ConditionNode } from './ConditionNode'
 export { EndNode } from './EndNode'
-

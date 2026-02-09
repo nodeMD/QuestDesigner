@@ -9,7 +9,9 @@ export const EventNode = memo(({ data, selected, id }: NodeProps) => {
   const isTrigger = node.action === 'TRIGGER'
 
   return (
-    <div className={`quest-node node-event group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
+    <div
+      className={`quest-node node-event group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}
+    >
       <NodeActions nodeId={id} />
       {/* Input handle */}
       <Handle
@@ -36,7 +38,7 @@ export const EventNode = memo(({ data, selected, id }: NodeProps) => {
             {node.eventName || node.eventId || 'No event selected'}
           </span>
         </div>
-        
+
         {/* Parameters preview */}
         {node.parameters && Object.keys(node.parameters).length > 0 && (
           <div className="mt-2 text-xs text-text-muted font-mono">
@@ -89,4 +91,3 @@ export const EventNode = memo(({ data, selected, id }: NodeProps) => {
 })
 
 EventNode.displayName = 'EventNode'
-

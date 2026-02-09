@@ -3,12 +3,24 @@ import { X, Check, Plus, Trash2, GripVertical } from 'lucide-react'
 import { v4 as uuid } from 'uuid'
 import { useProjectStore } from '@/stores/projectStore'
 import { useUIStore } from '@/stores/uiStore'
-import type { QuestNode, Option, StartNode, DialogueNode, ChoiceNode, EndNode, EventNode, IfNode, AndNode, OrNode, GlobalEvent } from '@/types'
+import type {
+  QuestNode,
+  Option,
+  StartNode,
+  DialogueNode,
+  ChoiceNode,
+  EndNode,
+  EventNode,
+  IfNode,
+  AndNode,
+  OrNode,
+  GlobalEvent,
+} from '@/types'
 
 export function NodeEditPanel() {
   const { isEditPanelOpen, editingNodeId, closeEditPanel } = useUIStore()
   const { getNode, updateNode, project } = useProjectStore()
-  
+
   const [localNode, setLocalNode] = useState<QuestNode | null>(null)
 
   // Load node data when panel opens
@@ -52,9 +64,7 @@ export function NodeEditPanel() {
   const updateOption = (optionId: string, label: string) => {
     if ('options' in localNode) {
       updateLocalNode({
-        options: localNode.options.map(o => 
-          o.id === optionId ? { ...o, label } : o
-        )
+        options: localNode.options.map((o) => (o.id === optionId ? { ...o, label } : o)),
       } as Partial<QuestNode>)
     }
   }
@@ -62,7 +72,7 @@ export function NodeEditPanel() {
   const removeOption = (optionId: string) => {
     if ('options' in localNode) {
       updateLocalNode({
-        options: localNode.options.filter(o => o.id !== optionId)
+        options: localNode.options.filter((o) => o.id !== optionId),
       } as Partial<QuestNode>)
     }
   }
@@ -76,7 +86,13 @@ export function NodeEditPanel() {
       case 'CHOICE':
         return <ChoiceNodeFields node={localNode as ChoiceNode} onUpdate={updateLocalNode} />
       case 'EVENT':
-        return <EventNodeFields node={localNode as EventNode} onUpdate={updateLocalNode} events={project?.events || []} />
+        return (
+          <EventNodeFields
+            node={localNode as EventNode}
+            onUpdate={updateLocalNode}
+            events={project?.events || []}
+          />
+        )
       case 'IF':
         return <IfNodeFields node={localNode as IfNode} onUpdate={updateLocalNode} />
       case 'AND':
@@ -104,9 +120,7 @@ export function NodeEditPanel() {
           >
             <Check className="w-5 h-5" />
           </button>
-          <h3 className="font-mono font-semibold text-text-primary">
-            {localNode.type} NODE
-          </h3>
+          <h3 className="font-mono font-semibold text-text-primary">{localNode.type} NODE</h3>
         </div>
         <button
           onClick={handleCancel}
@@ -183,7 +197,13 @@ export function NodeEditPanel() {
 
 // Field components for each node type
 
-function StartNodeFields({ node, onUpdate }: { node: StartNode; onUpdate: (u: Partial<StartNode>) => void }) {
+function StartNodeFields({
+  node,
+  onUpdate,
+}: {
+  node: StartNode
+  onUpdate: (u: Partial<StartNode>) => void
+}) {
   return (
     <>
       <div>
@@ -196,7 +216,7 @@ function StartNodeFields({ node, onUpdate }: { node: StartNode; onUpdate: (u: Pa
           placeholder="Quest title"
         />
       </div>
-      
+
       <div className="grid grid-cols-1">
         <div>
           <label className="block text-xs font-medium text-text-muted mb-1">Location Name</label>
@@ -214,7 +234,9 @@ function StartNodeFields({ node, onUpdate }: { node: StartNode; onUpdate: (u: Pa
             <input
               type="number"
               value={node.location?.x || ''}
-              onChange={(e) => onUpdate({ location: { ...node.location, x: Number(e.target.value) } })}
+              onChange={(e) =>
+                onUpdate({ location: { ...node.location, x: Number(e.target.value) } })
+              }
               className="w-full text-sm"
             />
           </div>
@@ -223,7 +245,9 @@ function StartNodeFields({ node, onUpdate }: { node: StartNode; onUpdate: (u: Pa
             <input
               type="number"
               value={node.location?.y || ''}
-              onChange={(e) => onUpdate({ location: { ...node.location, y: Number(e.target.value) } })}
+              onChange={(e) =>
+                onUpdate({ location: { ...node.location, y: Number(e.target.value) } })
+              }
               className="w-full text-sm"
             />
           </div>
@@ -232,7 +256,9 @@ function StartNodeFields({ node, onUpdate }: { node: StartNode; onUpdate: (u: Pa
             <input
               type="number"
               value={node.location?.z || ''}
-              onChange={(e) => onUpdate({ location: { ...node.location, z: Number(e.target.value) } })}
+              onChange={(e) =>
+                onUpdate({ location: { ...node.location, z: Number(e.target.value) } })
+              }
               className="w-full text-sm"
             />
           </div>
@@ -255,7 +281,9 @@ function StartNodeFields({ node, onUpdate }: { node: StartNode; onUpdate: (u: Pa
           <input
             type="text"
             value={node.npc?.type || ''}
-            onChange={(e) => onUpdate({ npc: { ...node.npc, name: node.npc?.name || '', type: e.target.value } })}
+            onChange={(e) =>
+              onUpdate({ npc: { ...node.npc, name: node.npc?.name || '', type: e.target.value } })
+            }
             className="w-full text-sm"
             placeholder="e.g., Orc"
           />
@@ -275,7 +303,13 @@ function StartNodeFields({ node, onUpdate }: { node: StartNode; onUpdate: (u: Pa
   )
 }
 
-function DialogueNodeFields({ node, onUpdate }: { node: DialogueNode; onUpdate: (u: Partial<DialogueNode>) => void }) {
+function DialogueNodeFields({
+  node,
+  onUpdate,
+}: {
+  node: DialogueNode
+  onUpdate: (u: Partial<DialogueNode>) => void
+}) {
   return (
     <>
       <div>
@@ -288,7 +322,7 @@ function DialogueNodeFields({ node, onUpdate }: { node: DialogueNode; onUpdate: 
           placeholder="Who is speaking?"
         />
       </div>
-      
+
       <div>
         <label className="block text-xs font-medium text-text-muted mb-1">Dialogue Text</label>
         <textarea
@@ -302,7 +336,13 @@ function DialogueNodeFields({ node, onUpdate }: { node: DialogueNode; onUpdate: 
   )
 }
 
-function ChoiceNodeFields({ node, onUpdate }: { node: ChoiceNode; onUpdate: (u: Partial<ChoiceNode>) => void }) {
+function ChoiceNodeFields({
+  node,
+  onUpdate,
+}: {
+  node: ChoiceNode
+  onUpdate: (u: Partial<ChoiceNode>) => void
+}) {
   return (
     <div>
       <label className="block text-xs font-medium text-text-muted mb-1">Prompt (optional)</label>
@@ -317,27 +357,27 @@ function ChoiceNodeFields({ node, onUpdate }: { node: ChoiceNode; onUpdate: (u: 
   )
 }
 
-function EventNodeFields({ 
-  node, 
-  onUpdate, 
-  events 
-}: { 
-  node: EventNode; 
-  onUpdate: (u: Partial<EventNode>) => void;
+function EventNodeFields({
+  node,
+  onUpdate,
+  events,
+}: {
+  node: EventNode
+  onUpdate: (u: Partial<EventNode>) => void
   events: GlobalEvent[]
 }) {
-  const selectedEvent = events.find(e => e.id === node.eventId)
+  const selectedEvent = events.find((e) => e.id === node.eventId)
   const eventParams = selectedEvent?.parameters || []
-  
+
   const handleParamChange = (paramName: string, value: unknown) => {
     onUpdate({
       parameters: {
         ...(node.parameters || {}),
-        [paramName]: value
-      }
+        [paramName]: value,
+      },
     })
   }
-  
+
   return (
     <>
       <div>
@@ -357,19 +397,21 @@ function EventNodeFields({
         <select
           value={node.eventId}
           onChange={(e) => {
-            const event = events.find(ev => ev.id === e.target.value)
-            onUpdate({ 
-              eventId: e.target.value, 
+            const event = events.find((ev) => ev.id === e.target.value)
+            onUpdate({
+              eventId: e.target.value,
               eventName: event?.name,
               // Reset parameters when changing event
-              parameters: {}
+              parameters: {},
             })
           }}
           className="w-full text-sm"
         >
           <option value="">Select an event...</option>
-          {events.map(event => (
-            <option key={event.id} value={event.id}>{event.name}</option>
+          {events.map((event) => (
+            <option key={event.id} value={event.id}>
+              {event.name}
+            </option>
           ))}
         </select>
       </div>
@@ -390,7 +432,11 @@ function EventNodeFields({
                 )}
                 {param.type === 'boolean' ? (
                   <select
-                    value={(node.parameters?.[param.name] ?? param.defaultValue ?? false) === true ? 'true' : 'false'}
+                    value={
+                      (node.parameters?.[param.name] ?? param.defaultValue ?? false) === true
+                        ? 'true'
+                        : 'false'
+                    }
                     onChange={(e) => handleParamChange(param.name, e.target.value === 'true')}
                     className="w-full text-sm"
                   >
@@ -436,49 +482,62 @@ interface ConditionPart {
   customExpression?: string
 }
 
-function parseConditionToBuilder(condition: string): { parts: ConditionPart[], combiner: 'AND' | 'OR' } {
+function parseConditionToBuilder(condition: string): {
+  parts: ConditionPart[]
+  combiner: 'AND' | 'OR'
+} {
   // Simple parser - try to extract conditions
   if (!condition || condition.trim() === '') {
     return { parts: [], combiner: 'AND' }
   }
-  
+
   // Check if it's a combined condition
   const combiner = condition.includes('||') ? 'OR' : 'AND'
-  
+
   // For now, if it's complex, just return a custom condition
   return {
-    parts: [{
-      id: uuid(),
-      type: 'custom',
-      customExpression: condition
-    }],
-    combiner
+    parts: [
+      {
+        id: uuid(),
+        type: 'custom',
+        customExpression: condition,
+      },
+    ],
+    combiner,
   }
 }
 
 function buildConditionFromParts(parts: ConditionPart[], combiner: 'AND' | 'OR'): string {
   if (parts.length === 0) return ''
-  
-  const conditions = parts.map(part => {
-    switch (part.type) {
-      case 'hasItem':
-        return `player.hasItem('${part.itemName || ''}')`
-      case 'reputation':
-        return `faction.reputation('${part.factionName || ''}') ${part.operator || '>'} ${part.value || 0}`
-      case 'eventTriggered':
-        return `event.isTriggered('${part.itemName || ''}')`
-      case 'custom':
-        return part.customExpression || ''
-      default:
-        return ''
-    }
-  }).filter(c => c.trim() !== '')
-  
+
+  const conditions = parts
+    .map((part) => {
+      switch (part.type) {
+        case 'hasItem':
+          return `player.hasItem('${part.itemName || ''}')`
+        case 'reputation':
+          return `faction.reputation('${part.factionName || ''}') ${part.operator || '>'} ${part.value || 0}`
+        case 'eventTriggered':
+          return `event.isTriggered('${part.itemName || ''}')`
+        case 'custom':
+          return part.customExpression || ''
+        default:
+          return ''
+      }
+    })
+    .filter((c) => c.trim() !== '')
+
   const joiner = combiner === 'AND' ? ' && ' : ' || '
   return conditions.join(joiner)
 }
 
-function IfNodeFields({ node, onUpdate }: { node: IfNode; onUpdate: (u: Partial<IfNode>) => void }) {
+function IfNodeFields({
+  node,
+  onUpdate,
+}: {
+  node: IfNode
+  onUpdate: (u: Partial<IfNode>) => void
+}) {
   const [useBuilder, setUseBuilder] = useState(false)
   const [parts, setParts] = useState<ConditionPart[]>([])
   const [combiner, setCombiner] = useState<'AND' | 'OR'>('AND')
@@ -495,7 +554,7 @@ function IfNodeFields({ node, onUpdate }: { node: IfNode; onUpdate: (u: Partial<
       id: uuid(),
       type,
       operator: '>',
-      value: 0
+      value: 0,
     }
     const newParts = [...parts, newPart]
     setParts(newParts)
@@ -503,13 +562,13 @@ function IfNodeFields({ node, onUpdate }: { node: IfNode; onUpdate: (u: Partial<
   }
 
   const updateConditionPart = (id: string, updates: Partial<ConditionPart>) => {
-    const newParts = parts.map(p => p.id === id ? { ...p, ...updates } : p)
+    const newParts = parts.map((p) => (p.id === id ? { ...p, ...updates } : p))
     setParts(newParts)
     onUpdate({ condition: buildConditionFromParts(newParts, combiner) })
   }
 
   const removeConditionPart = (id: string) => {
-    const newParts = parts.filter(p => p.id !== id)
+    const newParts = parts.filter((p) => p.id !== id)
     setParts(newParts)
     onUpdate({ condition: buildConditionFromParts(newParts, combiner) })
   }
@@ -574,7 +633,9 @@ function IfNodeFields({ node, onUpdate }: { node: IfNode; onUpdate: (u: Partial<
                 {/* Condition type selector */}
                 <select
                   value={part.type}
-                  onChange={(e) => updateConditionPart(part.id, { type: e.target.value as ConditionType })}
+                  onChange={(e) =>
+                    updateConditionPart(part.id, { type: e.target.value as ConditionType })
+                  }
                   className="w-full text-xs"
                 >
                   <option value="hasItem">Player has item</option>
@@ -599,13 +660,19 @@ function IfNodeFields({ node, onUpdate }: { node: IfNode; onUpdate: (u: Partial<
                     <input
                       type="text"
                       value={part.factionName || ''}
-                      onChange={(e) => updateConditionPart(part.id, { factionName: e.target.value })}
+                      onChange={(e) =>
+                        updateConditionPart(part.id, { factionName: e.target.value })
+                      }
                       className="flex-1 text-xs"
                       placeholder="Faction name"
                     />
                     <select
                       value={part.operator || '>'}
-                      onChange={(e) => updateConditionPart(part.id, { operator: e.target.value as ConditionOperator })}
+                      onChange={(e) =>
+                        updateConditionPart(part.id, {
+                          operator: e.target.value as ConditionOperator,
+                        })
+                      }
                       className="w-16 text-xs"
                     >
                       <option value=">">{'>'}</option>
@@ -618,7 +685,9 @@ function IfNodeFields({ node, onUpdate }: { node: IfNode; onUpdate: (u: Partial<
                     <input
                       type="number"
                       value={part.value || 0}
-                      onChange={(e) => updateConditionPart(part.id, { value: Number(e.target.value) })}
+                      onChange={(e) =>
+                        updateConditionPart(part.id, { value: Number(e.target.value) })
+                      }
                       className="w-16 text-xs"
                     />
                   </div>
@@ -638,7 +707,9 @@ function IfNodeFields({ node, onUpdate }: { node: IfNode; onUpdate: (u: Partial<
                   <input
                     type="text"
                     value={part.customExpression || ''}
-                    onChange={(e) => updateConditionPart(part.id, { customExpression: e.target.value })}
+                    onChange={(e) =>
+                      updateConditionPart(part.id, { customExpression: e.target.value })
+                    }
                     className="w-full text-xs font-mono"
                     placeholder="JavaScript expression"
                   />
@@ -697,16 +768,20 @@ function IfNodeFields({ node, onUpdate }: { node: IfNode; onUpdate: (u: Partial<
             className="w-full text-sm h-20 font-mono"
             placeholder="e.g., player.hasItem('ember') && faction.reputation('dwarves') > 50"
           />
-          <p className="text-xs text-text-muted">
-            Use JavaScript-like syntax for conditions
-          </p>
+          <p className="text-xs text-text-muted">Use JavaScript-like syntax for conditions</p>
         </>
       )}
     </div>
   )
 }
 
-function EndNodeFields({ node, onUpdate }: { node: EndNode; onUpdate: (u: Partial<EndNode>) => void }) {
+function EndNodeFields({
+  node,
+  onUpdate,
+}: {
+  node: EndNode
+  onUpdate: (u: Partial<EndNode>) => void
+}) {
   return (
     <>
       <div>
@@ -724,7 +799,9 @@ function EndNodeFields({ node, onUpdate }: { node: EndNode; onUpdate: (u: Partia
         <label className="block text-xs font-medium text-text-muted mb-1">Outcome</label>
         <select
           value={node.outcome}
-          onChange={(e) => onUpdate({ outcome: e.target.value as 'SUCCESS' | 'FAILURE' | 'NEUTRAL' })}
+          onChange={(e) =>
+            onUpdate({ outcome: e.target.value as 'SUCCESS' | 'FAILURE' | 'NEUTRAL' })
+          }
           className="w-full text-sm"
         >
           <option value="SUCCESS">Success</option>
@@ -746,7 +823,13 @@ function EndNodeFields({ node, onUpdate }: { node: EndNode; onUpdate: (u: Partia
   )
 }
 
-function AndOrNodeFields({ node, onUpdate }: { node: AndNode | OrNode; onUpdate: (u: Partial<AndNode | OrNode>) => void }) {
+function AndOrNodeFields({
+  node,
+  onUpdate,
+}: {
+  node: AndNode | OrNode
+  onUpdate: (u: Partial<AndNode | OrNode>) => void
+}) {
   const handleInputCountChange = (delta: number) => {
     const newCount = Math.max(2, node.inputCount + delta)
     onUpdate({ inputCount: newCount })
@@ -776,12 +859,10 @@ function AndOrNodeFields({ node, onUpdate }: { node: AndNode | OrNode; onUpdate:
         </button>
       </div>
       <p className="text-xs text-text-muted mt-2">
-        {node.type === 'AND' 
+        {node.type === 'AND'
           ? 'All inputs must be connected for the condition to pass'
-          : 'Any input being connected will allow the condition to pass'
-        }
+          : 'Any input being connected will allow the condition to pass'}
       </p>
     </div>
   )
 }
-

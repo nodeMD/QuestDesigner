@@ -1,23 +1,17 @@
 import { test, expect, _electron as electron, ElectronApplication, Page } from '@playwright/test'
 import path from 'path'
 
-// Use the electron module's path resolution
-const electronExecutable = require('electron') as string
-const mainPath = path.join(__dirname, '..', 'dist-electron', 'main.js')
+// Path to the built Electron app (relative to workspace root)
+const mainPath = path.join(process.cwd(), 'dist-electron', 'main.js')
 
 let electronApp: ElectronApplication
 let window: Page
 
 test.describe('Quest Designer E2E', () => {
   test.beforeAll(async () => {
-    // Launch Electron app without remote debugging port (not supported in newer Electron)
+    // Launch Electron app
     electronApp = await electron.launch({
-      executablePath: electronExecutable,
-      args: [
-        mainPath,
-        '--no-sandbox',
-      ],
-      // Disable Playwright's default CDP port
+      args: [mainPath, '--no-sandbox'],
       timeout: 30000,
     })
     
@@ -189,11 +183,7 @@ test.describe('Quest Designer E2E', () => {
 test.describe('Quest Designer - Node Creation Flow', () => {
   test.beforeAll(async () => {
     electronApp = await electron.launch({
-      executablePath: electronExecutable,
-      args: [
-        mainPath,
-        '--no-sandbox',
-      ],
+      args: [mainPath, '--no-sandbox'],
       timeout: 30000,
     })
     window = await electronApp.firstWindow()

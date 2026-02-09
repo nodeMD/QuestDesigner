@@ -12,64 +12,64 @@ interface UIState {
   // Edit panel
   isEditPanelOpen: boolean
   editingNodeId: string | null
-  
+
   // Event edit panel
   isEventEditPanelOpen: boolean
   editingEventId: string | null
-  
+
   // Context menu
   contextMenu: ContextMenuState
-  
+
   // Modals
   isDeleteModalOpen: boolean
   deleteTarget: { type: 'node' | 'connection' | 'quest' | 'event'; id: string } | null
-  
+
   // Sidebar
   sidebarTab: 'quests' | 'events'
-  
+
   // Validation
   isValidating: boolean
   validationPanelOpen: boolean
-  
+
   // Canvas focus - for panning to a node
   focusNodeId: string | null
-  
+
   // Search
   searchQuery: string
   searchResultNodeIds: string[]
   isSearchOpen: boolean
-  
+
   // Simulation/Preview
   isSimulationOpen: boolean
   simulationNodeId: string | null
   simulationHistory: string[]
-  
+
   // Actions
   openEditPanel: (nodeId: string) => void
   closeEditPanel: () => void
-  
+
   openEventEditPanel: (eventId: string) => void
   closeEventEditPanel: () => void
-  
+
   openContextMenu: (type: ContextMenuState['type'], position: Position, targetId?: string) => void
   closeContextMenu: () => void
-  
+
   openDeleteModal: (type: 'node' | 'connection' | 'quest' | 'event', id: string) => void
   closeDeleteModal: () => void
-  
+
   setSidebarTab: (tab: 'quests' | 'events') => void
-  
+
   setValidating: (validating: boolean) => void
   setValidationPanelOpen: (open: boolean) => void
-  
+
   focusOnNode: (nodeId: string) => void
   clearFocusNode: () => void
-  
+
   setSearchQuery: (query: string) => void
   setSearchResults: (nodeIds: string[]) => void
   openSearch: () => void
   closeSearch: () => void
-  
+
   // Simulation actions
   startSimulation: (startNodeId: string) => void
   stopSimulation: () => void
@@ -80,30 +80,30 @@ interface UIState {
 export const useUIStore = create<UIState>((set) => ({
   isEditPanelOpen: false,
   editingNodeId: null,
-  
+
   isEventEditPanelOpen: false,
   editingEventId: null,
-  
+
   contextMenu: {
     isOpen: false,
     position: { x: 0, y: 0 },
     type: 'canvas',
   },
-  
+
   isDeleteModalOpen: false,
   deleteTarget: null,
-  
+
   sidebarTab: 'quests',
-  
+
   isValidating: false,
   validationPanelOpen: false,
-  
+
   focusNodeId: null,
-  
+
   searchQuery: '',
   searchResultNodeIds: [],
   isSearchOpen: false,
-  
+
   isSimulationOpen: false,
   simulationNodeId: null,
   simulationHistory: [],
@@ -130,36 +130,39 @@ export const useUIStore = create<UIState>((set) => ({
 
   setValidating: (validating) => set({ isValidating: validating }),
   setValidationPanelOpen: (open) => set({ validationPanelOpen: open }),
-  
+
   focusOnNode: (nodeId) => set({ focusNodeId: nodeId }),
   clearFocusNode: () => set({ focusNodeId: null }),
-  
+
   setSearchQuery: (query) => set({ searchQuery: query }),
   setSearchResults: (nodeIds) => set({ searchResultNodeIds: nodeIds }),
   openSearch: () => set({ isSearchOpen: true }),
   closeSearch: () => set({ isSearchOpen: false, searchQuery: '', searchResultNodeIds: [] }),
-  
-  startSimulation: (startNodeId) => set({ 
-    isSimulationOpen: true, 
-    simulationNodeId: startNodeId,
-    simulationHistory: [startNodeId]
-  }),
-  stopSimulation: () => set({ 
-    isSimulationOpen: false, 
-    simulationNodeId: null,
-    simulationHistory: []
-  }),
-  goToNode: (nodeId) => set((state) => ({ 
-    simulationNodeId: nodeId,
-    simulationHistory: [...state.simulationHistory, nodeId]
-  })),
-  goBack: () => set((state) => {
-    if (state.simulationHistory.length <= 1) return state
-    const newHistory = state.simulationHistory.slice(0, -1)
-    return {
-      simulationNodeId: newHistory[newHistory.length - 1],
-      simulationHistory: newHistory
-    }
-  }),
-}))
 
+  startSimulation: (startNodeId) =>
+    set({
+      isSimulationOpen: true,
+      simulationNodeId: startNodeId,
+      simulationHistory: [startNodeId],
+    }),
+  stopSimulation: () =>
+    set({
+      isSimulationOpen: false,
+      simulationNodeId: null,
+      simulationHistory: [],
+    }),
+  goToNode: (nodeId) =>
+    set((state) => ({
+      simulationNodeId: nodeId,
+      simulationHistory: [...state.simulationHistory, nodeId],
+    })),
+  goBack: () =>
+    set((state) => {
+      if (state.simulationHistory.length <= 1) return state
+      const newHistory = state.simulationHistory.slice(0, -1)
+      return {
+        simulationNodeId: newHistory[newHistory.length - 1],
+        simulationHistory: newHistory,
+      }
+    }),
+}))

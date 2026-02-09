@@ -1,6 +1,15 @@
 import { describe, it, expect } from 'vitest'
 import { validateQuest, hasErrors, isQuestValid } from './validation'
-import type { Quest, StartNode, EndNode, DialogueNode, ChoiceNode, EventNode, IfNode, AndNode } from '@/types'
+import type {
+  Quest,
+  StartNode,
+  EndNode,
+  DialogueNode,
+  ChoiceNode,
+  EventNode,
+  IfNode,
+  AndNode,
+} from '@/types'
 
 // Helper to create a minimal quest
 function createQuest(overrides: Partial<Quest> = {}): Quest {
@@ -104,9 +113,9 @@ describe('validateQuest', () => {
       const quest = createQuest({
         nodes: [createEndNode()],
       })
-      
+
       const issues = validateQuest(quest)
-      
+
       expect(issues).toContainEqual(
         expect.objectContaining({
           severity: 'error',
@@ -117,14 +126,11 @@ describe('validateQuest', () => {
 
     it('should return error when quest has multiple START nodes', () => {
       const quest = createQuest({
-        nodes: [
-          createStartNode({ id: 'start-1' }),
-          createStartNode({ id: 'start-2' }),
-        ],
+        nodes: [createStartNode({ id: 'start-1' }), createStartNode({ id: 'start-2' })],
       })
-      
+
       const issues = validateQuest(quest)
-      
+
       expect(issues).toContainEqual(
         expect.objectContaining({
           severity: 'error',
@@ -140,15 +146,11 @@ describe('validateQuest', () => {
           { id: 'conn-1', sourceNodeId: 'start-1', sourceOptionId: 'opt-1', targetNodeId: 'end-1' },
         ],
       })
-      
+
       const issues = validateQuest(quest)
-      
-      expect(issues).not.toContainEqual(
-        expect.objectContaining({ type: 'MISSING_START' })
-      )
-      expect(issues).not.toContainEqual(
-        expect.objectContaining({ type: 'MULTIPLE_START' })
-      )
+
+      expect(issues).not.toContainEqual(expect.objectContaining({ type: 'MISSING_START' }))
+      expect(issues).not.toContainEqual(expect.objectContaining({ type: 'MULTIPLE_START' }))
     })
   })
 
@@ -164,9 +166,9 @@ describe('validateQuest', () => {
           { id: 'conn-1', sourceNodeId: 'start-1', sourceOptionId: 'opt-1', targetNodeId: 'end-1' },
         ],
       })
-      
+
       const issues = validateQuest(quest)
-      
+
       expect(issues).toContainEqual(
         expect.objectContaining({
           severity: 'warning',
@@ -183,10 +185,10 @@ describe('validateQuest', () => {
           { id: 'conn-1', sourceNodeId: 'start-1', sourceOptionId: 'opt-1', targetNodeId: 'end-1' },
         ],
       })
-      
+
       const issues = validateQuest(quest)
-      
-      const orphanIssues = issues.filter(i => i.type === 'ORPHAN_NODE' && i.nodeId === 'start-1')
+
+      const orphanIssues = issues.filter((i) => i.type === 'ORPHAN_NODE' && i.nodeId === 'start-1')
       expect(orphanIssues).toHaveLength(0)
     })
   })
@@ -205,14 +207,24 @@ describe('validateQuest', () => {
           createEndNode(),
         ],
         connections: [
-          { id: 'conn-1', sourceNodeId: 'start-1', sourceOptionId: 'opt-1', targetNodeId: 'dialogue-1' },
-          { id: 'conn-2', sourceNodeId: 'dialogue-1', sourceOptionId: 'opt-d1', targetNodeId: 'end-1' },
+          {
+            id: 'conn-1',
+            sourceNodeId: 'start-1',
+            sourceOptionId: 'opt-1',
+            targetNodeId: 'dialogue-1',
+          },
+          {
+            id: 'conn-2',
+            sourceNodeId: 'dialogue-1',
+            sourceOptionId: 'opt-d1',
+            targetNodeId: 'end-1',
+          },
           // opt-d2 has no connection
         ],
       })
-      
+
       const issues = validateQuest(quest)
-      
+
       expect(issues).toContainEqual(
         expect.objectContaining({
           severity: 'error',
@@ -235,9 +247,9 @@ describe('validateQuest', () => {
           { id: 'conn-1', sourceNodeId: 'start-1', sourceOptionId: 'opt-1', targetNodeId: 'end-1' },
         ],
       })
-      
+
       const issues = validateQuest(quest)
-      
+
       expect(issues).toContainEqual(
         expect.objectContaining({
           severity: 'warning',
@@ -252,20 +264,16 @@ describe('validateQuest', () => {
   describe('IF/EVENT CHECK node validation', () => {
     it('should return error for IF node without true output', () => {
       const quest = createQuest({
-        nodes: [
-          createStartNode(),
-          createIfNode(),
-          createEndNode({ id: 'end-false' }),
-        ],
+        nodes: [createStartNode(), createIfNode(), createEndNode({ id: 'end-false' })],
         connections: [
           { id: 'conn-1', sourceNodeId: 'start-1', sourceOptionId: 'opt-1', targetNodeId: 'if-1' },
           { id: 'conn-2', sourceNodeId: 'if-1', sourceOutput: 'false', targetNodeId: 'end-false' },
           // Missing true output
         ],
       })
-      
+
       const issues = validateQuest(quest)
-      
+
       expect(issues).toContainEqual(
         expect.objectContaining({
           severity: 'error',
@@ -277,20 +285,16 @@ describe('validateQuest', () => {
 
     it('should return error for IF node without false output', () => {
       const quest = createQuest({
-        nodes: [
-          createStartNode(),
-          createIfNode(),
-          createEndNode({ id: 'end-true' }),
-        ],
+        nodes: [createStartNode(), createIfNode(), createEndNode({ id: 'end-true' })],
         connections: [
           { id: 'conn-1', sourceNodeId: 'start-1', sourceOptionId: 'opt-1', targetNodeId: 'if-1' },
           { id: 'conn-2', sourceNodeId: 'if-1', sourceOutput: 'true', targetNodeId: 'end-true' },
           // Missing false output
         ],
       })
-      
+
       const issues = validateQuest(quest)
-      
+
       expect(issues).toContainEqual(
         expect.objectContaining({
           severity: 'error',
@@ -308,14 +312,21 @@ describe('validateQuest', () => {
           createEndNode(),
         ],
         connections: [
-          { id: 'conn-1', sourceNodeId: 'start-1', sourceOptionId: 'opt-1', targetNodeId: 'event-check' },
+          {
+            id: 'conn-1',
+            sourceNodeId: 'start-1',
+            sourceOptionId: 'opt-1',
+            targetNodeId: 'event-check',
+          },
           // Missing both true and false outputs
         ],
       })
-      
+
       const issues = validateQuest(quest)
-      
-      const outputIssues = issues.filter(i => i.type === 'UNCONNECTED_OUTPUT' && i.nodeId === 'event-check')
+
+      const outputIssues = issues.filter(
+        (i) => i.type === 'UNCONNECTED_OUTPUT' && i.nodeId === 'event-check'
+      )
       expect(outputIssues.length).toBeGreaterThanOrEqual(2)
     })
   })
@@ -323,18 +334,15 @@ describe('validateQuest', () => {
   describe('AND/OR/EVENT TRIGGER node validation', () => {
     it('should return error for AND node without outgoing connection', () => {
       const quest = createQuest({
-        nodes: [
-          createStartNode(),
-          createAndNode(),
-        ],
+        nodes: [createStartNode(), createAndNode()],
         connections: [
           { id: 'conn-1', sourceNodeId: 'start-1', sourceOptionId: 'opt-1', targetNodeId: 'and-1' },
           // AND node has no outgoing connection
         ],
       })
-      
+
       const issues = validateQuest(quest)
-      
+
       expect(issues).toContainEqual(
         expect.objectContaining({
           severity: 'error',
@@ -346,18 +354,20 @@ describe('validateQuest', () => {
 
     it('should return error for EVENT TRIGGER without outgoing connection', () => {
       const quest = createQuest({
-        nodes: [
-          createStartNode(),
-          createEventNode({ action: 'TRIGGER' }),
-        ],
+        nodes: [createStartNode(), createEventNode({ action: 'TRIGGER' })],
         connections: [
-          { id: 'conn-1', sourceNodeId: 'start-1', sourceOptionId: 'opt-1', targetNodeId: 'event-1' },
+          {
+            id: 'conn-1',
+            sourceNodeId: 'start-1',
+            sourceOptionId: 'opt-1',
+            targetNodeId: 'event-1',
+          },
           // EVENT TRIGGER has no outgoing connection
         ],
       })
-      
+
       const issues = validateQuest(quest)
-      
+
       // EVENT TRIGGER should have an outgoing connection
       expect(issues).toContainEqual(
         expect.objectContaining({
@@ -370,19 +380,20 @@ describe('validateQuest', () => {
 
     it('should not return error for EVENT TRIGGER with outgoing connection', () => {
       const quest = createQuest({
-        nodes: [
-          createStartNode(),
-          createEventNode({ action: 'TRIGGER' }),
-          createEndNode(),
-        ],
+        nodes: [createStartNode(), createEventNode({ action: 'TRIGGER' }), createEndNode()],
         connections: [
-          { id: 'conn-1', sourceNodeId: 'start-1', sourceOptionId: 'opt-1', targetNodeId: 'event-1' },
+          {
+            id: 'conn-1',
+            sourceNodeId: 'start-1',
+            sourceOptionId: 'opt-1',
+            targetNodeId: 'event-1',
+          },
           { id: 'conn-2', sourceNodeId: 'event-1', targetNodeId: 'end-1' },
         ],
       })
-      
+
       const issues = validateQuest(quest)
-      
+
       expect(issues).not.toContainEqual(
         expect.objectContaining({
           type: 'DEAD_END',
@@ -404,9 +415,9 @@ describe('validateQuest', () => {
           { id: 'conn-1', sourceNodeId: 'start-1', sourceOptionId: 'opt-1', targetNodeId: 'end-1' },
         ],
       })
-      
+
       const issues = validateQuest(quest)
-      
+
       expect(issues).toContainEqual(
         expect.objectContaining({
           severity: 'warning',
@@ -420,20 +431,26 @@ describe('validateQuest', () => {
   describe('Valid quest', () => {
     it('should return no errors for a valid simple quest', () => {
       const quest = createQuest({
-        nodes: [
-          createStartNode(),
-          createDialogueNode(),
-          createEndNode(),
-        ],
+        nodes: [createStartNode(), createDialogueNode(), createEndNode()],
         connections: [
-          { id: 'conn-1', sourceNodeId: 'start-1', sourceOptionId: 'opt-1', targetNodeId: 'dialogue-1' },
-          { id: 'conn-2', sourceNodeId: 'dialogue-1', sourceOptionId: 'opt-d1', targetNodeId: 'end-1' },
+          {
+            id: 'conn-1',
+            sourceNodeId: 'start-1',
+            sourceOptionId: 'opt-1',
+            targetNodeId: 'dialogue-1',
+          },
+          {
+            id: 'conn-2',
+            sourceNodeId: 'dialogue-1',
+            sourceOptionId: 'opt-d1',
+            targetNodeId: 'end-1',
+          },
         ],
       })
-      
+
       const issues = validateQuest(quest)
-      const errors = issues.filter(i => i.severity === 'error')
-      
+      const errors = issues.filter((i) => i.severity === 'error')
+
       expect(errors).toHaveLength(0)
     })
 
@@ -446,15 +463,30 @@ describe('validateQuest', () => {
           createEndNode({ id: 'end-b' }),
         ],
         connections: [
-          { id: 'conn-1', sourceNodeId: 'start-1', sourceOptionId: 'opt-1', targetNodeId: 'choice-1' },
-          { id: 'conn-2', sourceNodeId: 'choice-1', sourceOptionId: 'opt-c1', targetNodeId: 'end-a' },
-          { id: 'conn-3', sourceNodeId: 'choice-1', sourceOptionId: 'opt-c2', targetNodeId: 'end-b' },
+          {
+            id: 'conn-1',
+            sourceNodeId: 'start-1',
+            sourceOptionId: 'opt-1',
+            targetNodeId: 'choice-1',
+          },
+          {
+            id: 'conn-2',
+            sourceNodeId: 'choice-1',
+            sourceOptionId: 'opt-c1',
+            targetNodeId: 'end-a',
+          },
+          {
+            id: 'conn-3',
+            sourceNodeId: 'choice-1',
+            sourceOptionId: 'opt-c2',
+            targetNodeId: 'end-b',
+          },
         ],
       })
-      
+
       const issues = validateQuest(quest)
-      const errors = issues.filter(i => i.severity === 'error')
-      
+      const errors = issues.filter((i) => i.severity === 'error')
+
       expect(errors).toHaveLength(0)
     })
   })
@@ -466,7 +498,7 @@ describe('hasErrors', () => {
       { id: '1', severity: 'error' as const, type: 'TEST', message: 'Test error' },
       { id: '2', severity: 'warning' as const, type: 'TEST', message: 'Test warning' },
     ]
-    
+
     expect(hasErrors(issues)).toBe(true)
   })
 
@@ -474,7 +506,7 @@ describe('hasErrors', () => {
     const issues = [
       { id: '1', severity: 'warning' as const, type: 'TEST', message: 'Test warning' },
     ]
-    
+
     expect(hasErrors(issues)).toBe(false)
   })
 
@@ -486,15 +518,12 @@ describe('hasErrors', () => {
 describe('isQuestValid', () => {
   it('should return true for a valid quest', () => {
     const quest = createQuest({
-      nodes: [
-        createStartNode(),
-        createEndNode(),
-      ],
+      nodes: [createStartNode(), createEndNode()],
       connections: [
         { id: 'conn-1', sourceNodeId: 'start-1', sourceOptionId: 'opt-1', targetNodeId: 'end-1' },
       ],
     })
-    
+
     expect(isQuestValid(quest)).toBe(true)
   })
 
@@ -502,7 +531,7 @@ describe('isQuestValid', () => {
     const quest = createQuest({
       nodes: [createEndNode()], // No START node
     })
-    
+
     expect(isQuestValid(quest)).toBe(false)
   })
 })

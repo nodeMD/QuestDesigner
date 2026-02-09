@@ -1,13 +1,13 @@
 import { create } from 'zustand'
 import { v4 as uuid } from 'uuid'
-import type { 
-  Project, 
-  Quest, 
-  QuestNode, 
-  Connection, 
+import type {
+  Project,
+  Quest,
+  QuestNode,
+  Connection,
   GlobalEvent,
   NodeType,
-  Position
+  Position,
 } from '@/types'
 
 interface ProjectState {
@@ -15,53 +15,53 @@ interface ProjectState {
   project: Project | null
   currentQuestId: string | null
   selectedNodeId: string | null
-  
+
   // File state
   filePath: string | null
   isDirty: boolean
-  
+
   // Clipboard for copy/paste
   clipboard: QuestNode[] | null
-  
+
   // Actions
   createProject: (name: string) => void
   setProject: (project: Project) => void
   setFilePath: (path: string | null) => void
   setDirty: (dirty: boolean) => void
   renameProject: (name: string) => void
-  
+
   // Quest actions
   createQuest: (name: string) => void
   selectQuest: (questId: string) => void
   updateQuest: (questId: string, updates: Partial<Quest>) => void
   deleteQuest: (questId: string) => void
   importQuest: (quest: Quest) => void
-  
+
   // Node actions
   addNode: (type: NodeType, position: Position) => QuestNode | null
   updateNode: (nodeId: string, updates: Partial<QuestNode>) => void
   deleteNode: (nodeId: string) => void
   selectNode: (nodeId: string | null) => void
-  
+
   // Copy/paste actions
   copyNode: (nodeId: string) => void
   pasteNode: (position: Position) => QuestNode | null
-  
+
   // Connection actions
   addConnection: (connection: Omit<Connection, 'id'>) => void
   deleteConnection: (connectionId: string) => void
-  
+
   // Event actions
   createEvent: (name: string, description?: string) => GlobalEvent
   updateEvent: (eventId: string, updates: Partial<GlobalEvent>) => void
   deleteEvent: (eventId: string) => void
-  
+
   // Settings actions
   toggleAutoSave: () => void
-  
+
   // Layout actions
   applyAutoLayout: (positions: Map<string, Position>) => void
-  
+
   // Helpers
   getCurrentQuest: () => Quest | null
   getNode: (nodeId: string) => QuestNode | undefined
@@ -178,8 +178,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   },
 
   setProject: (project) => {
-    set({ 
-      project, 
+    set({
+      project,
       currentQuestId: project.quests[0]?.id ?? null,
       selectedNodeId: null,
       isDirty: false,
@@ -188,11 +188,11 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   setFilePath: (path) => set({ filePath: path }),
   setDirty: (dirty) => set({ isDirty: dirty }),
-  
+
   renameProject: (name) => {
     const { project } = get()
     if (!project) return
-    
+
     set({
       project: {
         ...project,
@@ -275,14 +275,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     if (!project || !currentQuestId) return null
 
     const node = createDefaultNode(type, position)
-    
+
     set({
       project: {
         ...project,
         quests: project.quests.map((q) =>
-          q.id === currentQuestId
-            ? { ...q, nodes: [...q.nodes, node], updatedAt: new Date() }
-            : q
+          q.id === currentQuestId ? { ...q, nodes: [...q.nodes, node], updatedAt: new Date() } : q
         ),
         updatedAt: new Date(),
       },
@@ -305,7 +303,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             ? {
                 ...q,
                 nodes: q.nodes.map((n) =>
-                  n.id === nodeId ? { ...n, ...updates } as QuestNode : n
+                  n.id === nodeId ? ({ ...n, ...updates } as QuestNode) : n
                 ),
                 updatedAt: new Date(),
               }
@@ -364,7 +362,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       position,
       // Generate new IDs for options if they exist
       ...('options' in originalNode && {
-        options: originalNode.options.map(opt => ({
+        options: originalNode.options.map((opt) => ({
           ...opt,
           id: uuid(),
         })),
@@ -491,7 +489,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   toggleAutoSave: () => {
     const { project } = get()
     if (!project) return
-    
+
     set({
       project: {
         ...project,
@@ -508,10 +506,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   applyAutoLayout: (positions: Map<string, Position>) => {
     const { project, currentQuestId } = get()
     if (!project || !currentQuestId) return
-    
+
     const questIndex = project.quests.findIndex((q) => q.id === currentQuestId)
     if (questIndex === -1) return
-    
+
     const quest = project.quests[questIndex]
     const updatedNodes = quest.nodes.map((node) => {
       const newPos = positions.get(node.id)
@@ -520,11 +518,11 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       }
       return node
     })
-    
+
     const updatedQuest = { ...quest, nodes: updatedNodes }
     const updatedQuests = [...project.quests]
     updatedQuests[questIndex] = updatedQuest
-    
+
     set({
       project: {
         ...project,
@@ -546,4 +544,3 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     return quest?.nodes.find((n) => n.id === nodeId)
   },
 }))
-

@@ -7,8 +7,9 @@ import type { ValidationIssue } from '@/types'
 
 export function ValidationPanel() {
   const { getCurrentQuest, selectNode } = useProjectStore()
-  const { validationPanelOpen, setValidationPanelOpen, isValidating, setValidating, focusOnNode } = useUIStore()
-  
+  const { validationPanelOpen, setValidationPanelOpen, isValidating, setValidating, focusOnNode } =
+    useUIStore()
+
   const [issues, setIssues] = useState<ValidationIssue[]>([])
   const currentQuest = getCurrentQuest()
 
@@ -21,7 +22,7 @@ export function ValidationPanel() {
 
   const runValidation = () => {
     if (!currentQuest) return
-    
+
     setValidating(true)
     setTimeout(() => {
       const result = validateQuest(currentQuest)
@@ -41,8 +42,8 @@ export function ValidationPanel() {
 
   if (!validationPanelOpen) return null
 
-  const errors = issues.filter(i => i.severity === 'error')
-  const warnings = issues.filter(i => i.severity === 'warning')
+  const errors = issues.filter((i) => i.severity === 'error')
+  const warnings = issues.filter((i) => i.severity === 'warning')
   const isValid = errors.length === 0 && warnings.length === 0
 
   return (
@@ -75,13 +76,17 @@ export function ValidationPanel() {
             {errors.length > 0 && (
               <div className="flex items-center gap-1.5 text-validation-error">
                 <AlertCircle className="w-4 h-4" />
-                <span className="text-sm font-medium">{errors.length} Error{errors.length !== 1 ? 's' : ''}</span>
+                <span className="text-sm font-medium">
+                  {errors.length} Error{errors.length !== 1 ? 's' : ''}
+                </span>
               </div>
             )}
             {warnings.length > 0 && (
               <div className="flex items-center gap-1.5 text-validation-warning">
                 <AlertTriangle className="w-4 h-4" />
-                <span className="text-sm font-medium">{warnings.length} Warning{warnings.length !== 1 ? 's' : ''}</span>
+                <span className="text-sm font-medium">
+                  {warnings.length} Warning{warnings.length !== 1 ? 's' : ''}
+                </span>
               </div>
             )}
           </>
@@ -93,11 +98,11 @@ export function ValidationPanel() {
         {!isValid && issues.length > 0 ? (
           <div className="divide-y divide-panel-border">
             {/* Errors first */}
-            {errors.map(issue => (
+            {errors.map((issue) => (
               <IssueItem key={issue.id} issue={issue} onGoTo={handleGoTo} />
             ))}
             {/* Then warnings */}
-            {warnings.map(issue => (
+            {warnings.map((issue) => (
               <IssueItem key={issue.id} issue={issue} onGoTo={handleGoTo} />
             ))}
           </div>
@@ -111,10 +116,7 @@ export function ValidationPanel() {
 
       {/* Footer */}
       <div className="flex justify-end gap-2 px-4 py-2 border-t border-panel-border">
-        <button
-          onClick={handleClear}
-          className="btn btn-ghost text-xs py-1"
-        >
+        <button onClick={handleClear} className="btn btn-ghost text-xs py-1">
           Clear
         </button>
         <button
@@ -130,15 +132,15 @@ export function ValidationPanel() {
   )
 }
 
-function IssueItem({ 
-  issue, 
-  onGoTo 
-}: { 
+function IssueItem({
+  issue,
+  onGoTo,
+}: {
   issue: ValidationIssue
-  onGoTo: (nodeId: string) => void 
+  onGoTo: (nodeId: string) => void
 }) {
   const isError = issue.severity === 'error'
-  
+
   return (
     <div className="px-4 py-3 hover:bg-sidebar-hover/50">
       <div className="flex items-start gap-2">
@@ -149,7 +151,9 @@ function IssueItem({
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className={`text-xs font-medium ${isError ? 'text-validation-error' : 'text-validation-warning'}`}>
+            <span
+              className={`text-xs font-medium ${isError ? 'text-validation-error' : 'text-validation-warning'}`}
+            >
               {issue.type.replace(/_/g, ' ')}
             </span>
           </div>
@@ -171,13 +175,13 @@ function IssueItem({
 
 function FlaskConicalIcon({ className }: { className?: string }) {
   return (
-    <svg 
-      className={className} 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
       strokeLinejoin="round"
     >
       <path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2" />
@@ -186,4 +190,3 @@ function FlaskConicalIcon({ className }: { className?: string }) {
     </svg>
   )
 }
-

@@ -16,13 +16,12 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
   const label = isIf ? 'IF' : isAnd ? 'AND' : 'OR'
 
   return (
-    <div className={`quest-node node-condition group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
+    <div
+      className={`quest-node node-condition group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}
+    >
       <NodeActions nodeId={id} />
       {/* Input handle(s) */}
-      {(isAnd || isOr) ? (
-        // Multiple inputs for AND/OR - rendered in the content area
-        null
-      ) : (
+      {isAnd || isOr ? null : ( // Multiple inputs for AND/OR - rendered in the content area
         // Single input for IF
         <Handle
           type="target"
@@ -113,4 +112,3 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
 })
 
 ConditionNode.displayName = 'ConditionNode'
-

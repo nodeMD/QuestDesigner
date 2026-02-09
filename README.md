@@ -2,9 +2,9 @@
 
 A visual node-based quest design tool for game developers. Create complex, branching quest narratives with an intuitive drag-and-drop interface inspired by Unreal Engine Blueprints.
 
-![CI](https://github.com/yourusername/QuestDesigner/actions/workflows/ci.yml/badge.svg)
-![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)
-![License](https://img.shields.io/badge/License-Quest%20Designer%20License-green)
+[![CI](https://github.com/nodeMD/QuestDesigner/actions/workflows/ci.yml/badge.svg)](https://github.com/nodeMD/QuestDesigner/actions/workflows/ci.yml)
+[![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#installation)
+[![License](https://img.shields.io/badge/License-Quest%20Designer%20License-green)](LICENSE.md)
 
 ## Features
 
@@ -54,18 +54,23 @@ npm run dev
 ### Building for Production
 
 ```bash
-# Build the application
+# Build for current platform
 npm run build
 
-# Package for distribution (macOS)
-npm run build:mac
-
-# Package for distribution (Windows)
-npm run build:win
-
-# Package for distribution (Linux)
-npm run build:linux
+# Build for specific platforms
+npm run build:mac      # Creates .dmg for macOS
+npm run build:win      # Creates .exe installer for Windows
+npm run build:linux    # Creates AppImage for Linux
 ```
+
+> **Note:** You can only build for your current operating system by default. To build for other platforms:
+> - **macOS** can build for macOS only
+> - **Windows** can build for Windows only  
+> - **Linux** can build for Linux and Windows
+>
+> For cross-platform builds, use CI/CD (like GitHub Actions) or tools like [electron-builder's remote build](https://www.electron.build/multi-platform-build).
+
+Built packages are output to the `release/` directory.
 
 ### Running Tests
 
@@ -175,7 +180,6 @@ QuestDesigner/
 │   ├── types/         # TypeScript type definitions
 │   ├── utils/         # Utility functions
 │   └── styles/        # Global styles
-├── SPEC.md            # Detailed specification
 ├── CONTRIBUTING.md    # Contribution guidelines
 └── LICENSE.md         # License information
 ```

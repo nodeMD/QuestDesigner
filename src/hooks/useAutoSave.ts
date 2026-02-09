@@ -39,4 +39,3 @@ export function useAutoSave() {
     }
   }, [project, filePath, isDirty, setDirty])
 }
-

@@ -68,19 +68,27 @@ function getEdgeColor(nodeType: string): string {
 }
 
 export function Canvas() {
-  const { 
-    project, 
-    currentQuestId, 
-    addConnection, 
+  const {
+    project,
+    currentQuestId,
+    addConnection,
     deleteConnection,
     updateNode,
     selectedNodeId,
     selectNode,
   } = useProjectStore()
-  const { openContextMenu, openEditPanel, focusNodeId, clearFocusNode, searchResultNodeIds, simulationNodeId, isSimulationOpen } = useUIStore()
+  const {
+    openContextMenu,
+    openEditPanel,
+    focusNodeId,
+    clearFocusNode,
+    searchResultNodeIds,
+    simulationNodeId,
+    isSimulationOpen,
+  } = useUIStore()
   const { setCenter, getZoom } = useReactFlow()
 
-  const currentQuest = project?.quests.find(q => q.id === currentQuestId)
+  const currentQuest = project?.quests.find((q) => q.id === currentQuestId)
 
   // Local state for nodes - allows React Flow to control dragging smoothly
   const [nodes, setNodes] = useState<Node[]>([])
@@ -88,26 +96,28 @@ export function Canvas() {
   // Sync nodes from store to local state when quest changes
   useEffect(() => {
     if (currentQuest) {
-      setNodes(currentQuest.nodes.map((node) => {
-        const flowNode = questNodeToFlowNode(node)
-        // Add highlight classes
-        const classNames: string[] = []
-        
-        // Search highlight
-        if (searchResultNodeIds.includes(node.id)) {
-          classNames.push('search-match')
-        }
-        
-        // Simulation highlight
-        if (isSimulationOpen && simulationNodeId === node.id) {
-          classNames.push('simulation-active')
-        }
-        
-        if (classNames.length > 0) {
-          flowNode.className = classNames.join(' ')
-        }
-        return flowNode
-      }))
+      setNodes(
+        currentQuest.nodes.map((node) => {
+          const flowNode = questNodeToFlowNode(node)
+          // Add highlight classes
+          const classNames: string[] = []
+
+          // Search highlight
+          if (searchResultNodeIds.includes(node.id)) {
+            classNames.push('search-match')
+          }
+
+          // Simulation highlight
+          if (isSimulationOpen && simulationNodeId === node.id) {
+            classNames.push('simulation-active')
+          }
+
+          if (classNames.length > 0) {
+            flowNode.className = classNames.join(' ')
+          }
+          return flowNode
+        })
+      )
     } else {
       setNodes([])
     }
@@ -116,13 +126,13 @@ export function Canvas() {
   // Pan to focused node when focusNodeId changes
   useEffect(() => {
     if (focusNodeId && currentQuest) {
-      const node = currentQuest.nodes.find(n => n.id === focusNodeId)
+      const node = currentQuest.nodes.find((n) => n.id === focusNodeId)
       if (node) {
         // Center the viewport on the node with a smooth animation
         const zoom = getZoom()
         setCenter(
           node.position.x + 140, // Add half the node width (~280px) to center it
-          node.position.y + 50,  // Add some offset for the node height
+          node.position.y + 50, // Add some offset for the node height
           { zoom: Math.max(zoom, 0.8), duration: 500 }
         )
         // Clear the focus after panning
@@ -134,7 +144,7 @@ export function Canvas() {
   const flowEdges = useMemo(() => {
     if (!currentQuest) return []
     return currentQuest.connections.map((conn) => {
-      const sourceNode = currentQuest.nodes.find(n => n.id === conn.sourceNodeId)
+      const sourceNode = currentQuest.nodes.find((n) => n.id === conn.sourceNodeId)
       return {
         id: conn.id,
         source: conn.sourceNodeId,
@@ -151,83 +161,98 @@ export function Canvas() {
   }, [currentQuest])
 
   // Handle node changes (position, selection)
-  const onNodesChange = useCallback((changes: NodeChange[]) => {
-    // Filter out 'remove' changes - we handle deletion through our own modal/confirmation flow
-    const filteredChanges = changes.filter(change => change.type !== 'remove')
-    
-    // Apply filtered changes to local state for smooth UI updates
-    setNodes((nds) => applyNodeChanges(filteredChanges, nds))
-    
-    // Handle specific changes
-    filteredChanges.forEach(change => {
-      // Persist position to store only when drag ends
-      if (change.type === 'position' && change.dragging === false && change.position) {
-        updateNode(change.id, { position: change.position })
-      }
-      // Handle selection
-      if (change.type === 'select') {
-        if (change.selected) {
-          selectNode(change.id)
-        } else if (selectedNodeId === change.id) {
-          selectNode(null)
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      // Filter out 'remove' changes - we handle deletion through our own modal/confirmation flow
+      const filteredChanges = changes.filter((change) => change.type !== 'remove')
+
+      // Apply filtered changes to local state for smooth UI updates
+      setNodes((nds) => applyNodeChanges(filteredChanges, nds))
+
+      // Handle specific changes
+      filteredChanges.forEach((change) => {
+        // Persist position to store only when drag ends
+        if (change.type === 'position' && change.dragging === false && change.position) {
+          updateNode(change.id, { position: change.position })
         }
-      }
-    })
-  }, [updateNode, selectNode, selectedNodeId])
+        // Handle selection
+        if (change.type === 'select') {
+          if (change.selected) {
+            selectNode(change.id)
+          } else if (selectedNodeId === change.id) {
+            selectNode(null)
+          }
+        }
+      })
+    },
+    [updateNode, selectNode, selectedNodeId]
+  )
 
   // Handle new connections
-  const onConnect: OnConnect = useCallback((connection) => {
-    if (connection.source && connection.target) {
-      // Find source node to determine connection type
-      const sourceNode = currentQuest?.nodes.find(n => n.id === connection.source)
-      const sourceHandleId = connection.sourceHandle || undefined
-      const targetHandleId = connection.targetHandle || undefined
-      
-      // IF, AND, OR, and EVENT CHECK nodes use sourceOutput for true/false handles
-      const usesSourceOutput = sourceNode && (
-        sourceNode.type === 'IF' || 
-        sourceNode.type === 'AND' || 
-        sourceNode.type === 'OR' ||
-        (sourceNode.type === 'EVENT' && sourceNode.action === 'CHECK')
-      )
-      
-      addConnection({
-        sourceNodeId: connection.source,
-        sourceOptionId: usesSourceOutput ? undefined : sourceHandleId,
-        sourceOutput: usesSourceOutput ? sourceHandleId : undefined,
-        targetNodeId: connection.target,
-        targetHandle: targetHandleId,
-      })
-    }
-  }, [addConnection, currentQuest])
+  const onConnect: OnConnect = useCallback(
+    (connection) => {
+      if (connection.source && connection.target) {
+        // Find source node to determine connection type
+        const sourceNode = currentQuest?.nodes.find((n) => n.id === connection.source)
+        const sourceHandleId = connection.sourceHandle || undefined
+        const targetHandleId = connection.targetHandle || undefined
+
+        // IF, AND, OR, and EVENT CHECK nodes use sourceOutput for true/false handles
+        const usesSourceOutput =
+          sourceNode &&
+          (sourceNode.type === 'IF' ||
+            sourceNode.type === 'AND' ||
+            sourceNode.type === 'OR' ||
+            (sourceNode.type === 'EVENT' && sourceNode.action === 'CHECK'))
+
+        addConnection({
+          sourceNodeId: connection.source,
+          sourceOptionId: usesSourceOutput ? undefined : sourceHandleId,
+          sourceOutput: usesSourceOutput ? sourceHandleId : undefined,
+          targetNodeId: connection.target,
+          targetHandle: targetHandleId,
+        })
+      }
+    },
+    [addConnection, currentQuest]
+  )
 
   // Handle edge deletion
-  const onEdgesChange = useCallback((changes: EdgeChange[]) => {
-    changes.forEach(change => {
-      if (change.type === 'remove') {
-        deleteConnection(change.id)
-      }
-    })
-  }, [deleteConnection])
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) => {
+      changes.forEach((change) => {
+        if (change.type === 'remove') {
+          deleteConnection(change.id)
+        }
+      })
+    },
+    [deleteConnection]
+  )
 
   // Handle context menu (right-click)
-  const onContextMenu = useCallback((event: React.MouseEvent) => {
-    event.preventDefault()
-    
-    // Get canvas-relative position
-    const bounds = (event.target as HTMLElement).closest('.react-flow')?.getBoundingClientRect()
-    if (!bounds) return
+  const onContextMenu = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault()
 
-    openContextMenu('canvas', {
-      x: event.clientX,
-      y: event.clientY,
-    })
-  }, [openContextMenu])
+      // Get canvas-relative position
+      const bounds = (event.target as HTMLElement).closest('.react-flow')?.getBoundingClientRect()
+      if (!bounds) return
+
+      openContextMenu('canvas', {
+        x: event.clientX,
+        y: event.clientY,
+      })
+    },
+    [openContextMenu]
+  )
 
   // Handle node double-click to open edit panel
-  const onNodeDoubleClick = useCallback((_: React.MouseEvent, node: Node) => {
-    openEditPanel(node.id)
-  }, [openEditPanel])
+  const onNodeDoubleClick = useCallback(
+    (_: React.MouseEvent, node: Node) => {
+      openEditPanel(node.id)
+    },
+    [openEditPanel]
+  )
 
   // Empty state
   if (!currentQuest) {
@@ -263,19 +288,9 @@ export function Canvas() {
       }}
       proOptions={{ hideAttribution: true }}
     >
-      <Background 
-        variant={BackgroundVariant.Dots} 
-        gap={20} 
-        size={1} 
-        color="#2a2a2a"
-      />
-      <Controls 
-        showZoom
-        showFitView
-        showInteractive={false}
-        position="bottom-right"
-      />
-      <MiniMap 
+      <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#2a2a2a" />
+      <Controls showZoom showFitView showInteractive={false} position="bottom-right" />
+      <MiniMap
         nodeColor={(node) => getEdgeColor(node.type || '')}
         maskColor="rgba(0, 0, 0, 0.8)"
         position="bottom-left"
@@ -283,4 +298,3 @@ export function Canvas() {
     </ReactFlow>
   )
 }
-

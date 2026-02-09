@@ -25,7 +25,7 @@ function App() {
 
   // Register keyboard shortcuts
   useKeyboardShortcuts()
-  
+
   // Auto-save when changes are made
   useAutoSave()
 
@@ -36,7 +36,7 @@ function App() {
         closeContextMenu()
       }
     }
-    
+
     window.addEventListener('click', handleClick)
     return () => window.removeEventListener('click', handleClick)
   }, [contextMenu.isOpen, closeContextMenu])
@@ -51,39 +51,39 @@ function App() {
       <div className="h-screen w-screen flex flex-col bg-canvas-bg">
         {/* Toolbar */}
         <Toolbar />
-        
+
         {/* Main content area */}
         <div className="flex-1 flex overflow-hidden">
           {/* Sidebar */}
           <Sidebar />
-          
+
           {/* Canvas area */}
           <div className="flex-1 relative">
             <Canvas />
-            
+
             {/* Validation panel (floating) */}
             <ValidationPanel />
           </div>
-          
+
           {/* Edit panel (slide-in from right) */}
           <NodeEditPanel />
-          
+
           {/* Event edit panel */}
           <EventEditPanel />
         </div>
-        
+
         {/* Status bar */}
         <StatusBar />
-        
+
         {/* Context menu */}
         <ContextMenu />
-        
+
         {/* Search panel */}
         <SearchPanel />
-        
+
         {/* Simulation panel */}
         <SimulationPanel />
-        
+
         {/* Delete confirmation modal */}
         <DeleteModal />
       </div>
@@ -92,4 +92,3 @@ function App() {
 }
 
 export default App
-
