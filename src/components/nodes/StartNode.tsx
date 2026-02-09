@@ -30,7 +30,7 @@ export const StartNode = memo(({ data, selected }: NodeProps) => {
               <span>{node.location.name}</span>
               {(node.location.x !== undefined || node.location.z !== undefined) && (
                 <span className="text-text-muted">
-                  ({node.location.x}, {node.location.z})
+                  ({node.location.x}, {node.location.y}, {node.location.z})
                 </span>
               )}
             </div>

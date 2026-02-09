@@ -197,7 +197,7 @@ function StartNodeFields({ node, onUpdate }: { node: StartNode; onUpdate: (u: Pa
         />
       </div>
       
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1">
         <div>
           <label className="block text-xs font-medium text-text-muted mb-1">Location Name</label>
           <input
@@ -208,13 +208,22 @@ function StartNodeFields({ node, onUpdate }: { node: StartNode; onUpdate: (u: Pa
             placeholder="e.g., Rivenhold"
           />
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <div>
             <label className="block text-xs font-medium text-text-muted mb-1">X</label>
             <input
               type="number"
               value={node.location?.x || ''}
               onChange={(e) => onUpdate({ location: { ...node.location, x: Number(e.target.value) } })}
+              className="w-full text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-1">Y</label>
+            <input
+              type="number"
+              value={node.location?.y || ''}
+              onChange={(e) => onUpdate({ location: { ...node.location, y: Number(e.target.value) } })}
               className="w-full text-sm"
             />
           </div>
@@ -351,19 +360,286 @@ function EventNodeFields({
   )
 }
 
+// Condition types for the visual builder
+type ConditionType = 'hasItem' | 'reputation' | 'eventTriggered' | 'custom'
+type ConditionOperator = '==' | '!=' | '>' | '<' | '>=' | '<='
+
+interface ConditionPart {
+  id: string
+  type: ConditionType
+  itemName?: string
+  factionName?: string
+  operator?: ConditionOperator
+  value?: string | number
+  customExpression?: string
+}
+
+function parseConditionToBuilder(condition: string): { parts: ConditionPart[], combiner: 'AND' | 'OR' } {
+  // Simple parser - try to extract conditions
+  if (!condition || condition.trim() === '') {
+    return { parts: [], combiner: 'AND' }
+  }
+  
+  // Check if it's a combined condition
+  const combiner = condition.includes('||') ? 'OR' : 'AND'
+  
+  // For now, if it's complex, just return a custom condition
+  return {
+    parts: [{
+      id: uuid(),
+      type: 'custom',
+      customExpression: condition
+    }],
+    combiner
+  }
+}
+
+function buildConditionFromParts(parts: ConditionPart[], combiner: 'AND' | 'OR'): string {
+  if (parts.length === 0) return ''
+  
+  const conditions = parts.map(part => {
+    switch (part.type) {
+      case 'hasItem':
+        return `player.hasItem('${part.itemName || ''}')`
+      case 'reputation':
+        return `faction.reputation('${part.factionName || ''}') ${part.operator || '>'} ${part.value || 0}`
+      case 'eventTriggered':
+        return `event.isTriggered('${part.itemName || ''}')`
+      case 'custom':
+        return part.customExpression || ''
+      default:
+        return ''
+    }
+  }).filter(c => c.trim() !== '')
+  
+  const joiner = combiner === 'AND' ? ' && ' : ' || '
+  return conditions.join(joiner)
+}
+
 function IfNodeFields({ node, onUpdate }: { node: IfNode; onUpdate: (u: Partial<IfNode>) => void }) {
+  const [useBuilder, setUseBuilder] = useState(false)
+  const [parts, setParts] = useState<ConditionPart[]>([])
+  const [combiner, setCombiner] = useState<'AND' | 'OR'>('AND')
+
+  // Initialize builder state from existing condition
+  useEffect(() => {
+    const parsed = parseConditionToBuilder(node.condition)
+    setParts(parsed.parts)
+    setCombiner(parsed.combiner)
+  }, []) // Only on mount
+
+  const addConditionPart = (type: ConditionType) => {
+    const newPart: ConditionPart = {
+      id: uuid(),
+      type,
+      operator: '>',
+      value: 0
+    }
+    const newParts = [...parts, newPart]
+    setParts(newParts)
+    onUpdate({ condition: buildConditionFromParts(newParts, combiner) })
+  }
+
+  const updateConditionPart = (id: string, updates: Partial<ConditionPart>) => {
+    const newParts = parts.map(p => p.id === id ? { ...p, ...updates } : p)
+    setParts(newParts)
+    onUpdate({ condition: buildConditionFromParts(newParts, combiner) })
+  }
+
+  const removeConditionPart = (id: string) => {
+    const newParts = parts.filter(p => p.id !== id)
+    setParts(newParts)
+    onUpdate({ condition: buildConditionFromParts(newParts, combiner) })
+  }
+
+  const handleCombinerChange = (newCombiner: 'AND' | 'OR') => {
+    setCombiner(newCombiner)
+    onUpdate({ condition: buildConditionFromParts(parts, newCombiner) })
+  }
+
   return (
-    <div>
-      <label className="block text-xs font-medium text-text-muted mb-1">Condition</label>
-      <textarea
-        value={node.condition}
-        onChange={(e) => onUpdate({ condition: e.target.value })}
-        className="w-full text-sm h-20 font-mono"
-        placeholder="e.g., player.hasItem('ember') && faction.reputation('dwarves') > 50"
-      />
-      <p className="text-xs text-text-muted mt-1">
-        Use JavaScript-like syntax for conditions
-      </p>
+    <div className="space-y-3">
+      {/* Toggle between builder and raw mode */}
+      <div className="flex items-center gap-2">
+        <label className="block text-xs font-medium text-text-muted">Condition</label>
+        <button
+          type="button"
+          onClick={() => setUseBuilder(!useBuilder)}
+          className="text-xs text-accent-blue hover:text-accent-hover transition-colors"
+        >
+          {useBuilder ? '← Raw mode' : 'Use builder →'}
+        </button>
+      </div>
+
+      {useBuilder ? (
+        <div className="space-y-3">
+          {/* Condition combiner */}
+          {parts.length > 1 && (
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-text-muted">Combine with:</span>
+              <button
+                type="button"
+                onClick={() => handleCombinerChange('AND')}
+                className={`px-2 py-1 rounded ${combiner === 'AND' ? 'bg-accent-blue text-white' : 'bg-sidebar-bg text-text-secondary'}`}
+              >
+                AND
+              </button>
+              <button
+                type="button"
+                onClick={() => handleCombinerChange('OR')}
+                className={`px-2 py-1 rounded ${combiner === 'OR' ? 'bg-accent-blue text-white' : 'bg-sidebar-bg text-text-secondary'}`}
+              >
+                OR
+              </button>
+            </div>
+          )}
+
+          {/* Condition parts */}
+          <div className="space-y-2">
+            {parts.map((part, index) => (
+              <div key={part.id} className="bg-sidebar-bg rounded p-2 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-text-muted">#{index + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeConditionPart(part.id)}
+                    className="p-1 text-text-muted hover:text-validation-error transition-colors"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+
+                {/* Condition type selector */}
+                <select
+                  value={part.type}
+                  onChange={(e) => updateConditionPart(part.id, { type: e.target.value as ConditionType })}
+                  className="w-full text-xs"
+                >
+                  <option value="hasItem">Player has item</option>
+                  <option value="reputation">Faction reputation</option>
+                  <option value="eventTriggered">Event triggered</option>
+                  <option value="custom">Custom expression</option>
+                </select>
+
+                {/* Type-specific inputs */}
+                {part.type === 'hasItem' && (
+                  <input
+                    type="text"
+                    value={part.itemName || ''}
+                    onChange={(e) => updateConditionPart(part.id, { itemName: e.target.value })}
+                    className="w-full text-xs"
+                    placeholder="Item name (e.g., ember)"
+                  />
+                )}
+
+                {part.type === 'reputation' && (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={part.factionName || ''}
+                      onChange={(e) => updateConditionPart(part.id, { factionName: e.target.value })}
+                      className="flex-1 text-xs"
+                      placeholder="Faction name"
+                    />
+                    <select
+                      value={part.operator || '>'}
+                      onChange={(e) => updateConditionPart(part.id, { operator: e.target.value as ConditionOperator })}
+                      className="w-16 text-xs"
+                    >
+                      <option value=">">{'>'}</option>
+                      <option value="<">{'<'}</option>
+                      <option value=">=">{'>='}</option>
+                      <option value="<=">{'<='}</option>
+                      <option value="==">{'=='}</option>
+                      <option value="!=">{'!='}</option>
+                    </select>
+                    <input
+                      type="number"
+                      value={part.value || 0}
+                      onChange={(e) => updateConditionPart(part.id, { value: Number(e.target.value) })}
+                      className="w-16 text-xs"
+                    />
+                  </div>
+                )}
+
+                {part.type === 'eventTriggered' && (
+                  <input
+                    type="text"
+                    value={part.itemName || ''}
+                    onChange={(e) => updateConditionPart(part.id, { itemName: e.target.value })}
+                    className="w-full text-xs"
+                    placeholder="Event name"
+                  />
+                )}
+
+                {part.type === 'custom' && (
+                  <input
+                    type="text"
+                    value={part.customExpression || ''}
+                    onChange={(e) => updateConditionPart(part.id, { customExpression: e.target.value })}
+                    className="w-full text-xs font-mono"
+                    placeholder="JavaScript expression"
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Add condition buttons */}
+          <div className="flex flex-wrap gap-1">
+            <button
+              type="button"
+              onClick={() => addConditionPart('hasItem')}
+              className="flex items-center gap-1 text-xs px-2 py-1 bg-sidebar-bg hover:bg-sidebar-hover rounded transition-colors"
+            >
+              <Plus className="w-3 h-3" /> Has Item
+            </button>
+            <button
+              type="button"
+              onClick={() => addConditionPart('reputation')}
+              className="flex items-center gap-1 text-xs px-2 py-1 bg-sidebar-bg hover:bg-sidebar-hover rounded transition-colors"
+            >
+              <Plus className="w-3 h-3" /> Reputation
+            </button>
+            <button
+              type="button"
+              onClick={() => addConditionPart('eventTriggered')}
+              className="flex items-center gap-1 text-xs px-2 py-1 bg-sidebar-bg hover:bg-sidebar-hover rounded transition-colors"
+            >
+              <Plus className="w-3 h-3" /> Event
+            </button>
+            <button
+              type="button"
+              onClick={() => addConditionPart('custom')}
+              className="flex items-center gap-1 text-xs px-2 py-1 bg-sidebar-bg hover:bg-sidebar-hover rounded transition-colors"
+            >
+              <Plus className="w-3 h-3" /> Custom
+            </button>
+          </div>
+
+          {/* Preview */}
+          {parts.length > 0 && (
+            <div className="bg-sidebar-bg rounded p-2">
+              <span className="text-xs text-text-muted">Generated:</span>
+              <code className="block text-xs font-mono text-text-secondary mt-1 break-all">
+                {node.condition || '(empty)'}
+              </code>
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          <textarea
+            value={node.condition}
+            onChange={(e) => onUpdate({ condition: e.target.value })}
+            className="w-full text-sm h-20 font-mono"
+            placeholder="e.g., player.hasItem('ember') && faction.reputation('dwarves') > 50"
+          />
+          <p className="text-xs text-text-muted">
+            Use JavaScript-like syntax for conditions
+          </p>
+        </>
+      )}
     </div>
   )
 }
