@@ -2,9 +2,9 @@
 
 A visual node-based quest design tool for game developers. Create complex, branching quest narratives with an intuitive drag-and-drop interface inspired by Unreal Engine Blueprints.
 
-![CI](https://github.com/yourusername/QuestDesigner/actions/workflows/ci.yml/badge.svg)
-![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)
-![License](https://img.shields.io/badge/License-Quest%20Designer%20License-green)
+[![CI](https://github.com/nodeMD/QuestDesigner/actions/workflows/ci.yml/badge.svg)](https://github.com/nodeMD/QuestDesigner/actions/workflows/ci.yml)
+[![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#installation)
+[![License](https://img.shields.io/badge/License-Quest%20Designer%20License-green)](LICENSE.md)
 
 ## Features
 
