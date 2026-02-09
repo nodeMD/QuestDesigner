@@ -54,18 +54,23 @@ npm run dev
 ### Building for Production
 
 ```bash
-# Build the application
+# Build for current platform
 npm run build
 
-# Package for distribution (macOS)
-npm run build:mac
-
-# Package for distribution (Windows)
-npm run build:win
-
-# Package for distribution (Linux)
-npm run build:linux
+# Build for specific platforms
+npm run build:mac      # Creates .dmg for macOS
+npm run build:win      # Creates .exe installer for Windows
+npm run build:linux    # Creates AppImage for Linux
 ```
+
+> **Note:** You can only build for your current operating system by default. To build for other platforms:
+> - **macOS** can build for macOS only
+> - **Windows** can build for Windows only  
+> - **Linux** can build for Linux and Windows
+>
+> For cross-platform builds, use CI/CD (like GitHub Actions) or tools like [electron-builder's remote build](https://www.electron.build/multi-platform-build).
+
+Built packages are output to the `release/` directory.
 
 ### Running Tests
 
