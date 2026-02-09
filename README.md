@@ -66,6 +66,25 @@ npm run build:win
 npm run build:linux
 ```
 
+### Running Tests
+
+```bash
+# Run unit tests in watch mode
+npm test
+
+# Run unit tests once
+npm run test:run
+
+# Run unit tests with coverage report
+npm run test:coverage
+
+# Run E2E tests (requires built app)
+npm run build && npm run test:e2e
+
+# Run E2E tests with UI
+npm run test:e2e:ui
+```
+
 ## Usage
 
 ### Creating a New Quest
