@@ -1,16 +1,14 @@
+import { useEffect, useCallback } from 'react'
 import { AlertTriangle, X } from 'lucide-react'
 import { useProjectStore } from '@/stores/projectStore'
 import { useUIStore } from '@/stores/uiStore'
 
 export function DeleteModal() {
   const { isDeleteModalOpen, deleteTarget, closeDeleteModal } = useUIStore()
-  const { deleteNode, deleteConnection, deleteQuest } = useProjectStore()
+  const { deleteNode, deleteConnection, deleteQuest, deleteEvent } = useProjectStore()
 
-  if (!isDeleteModalOpen || !deleteTarget) {
-    return null
-  }
-
-  const handleConfirm = () => {
+  const handleConfirm = useCallback(() => {
+    if (!deleteTarget) return
     switch (deleteTarget.type) {
       case 'node':
         deleteNode(deleteTarget.id)
@@ -21,8 +19,34 @@ export function DeleteModal() {
       case 'quest':
         deleteQuest(deleteTarget.id)
         break
+      case 'event':
+        deleteEvent(deleteTarget.id)
+        break
     }
     closeDeleteModal()
+  }, [deleteTarget, deleteNode, deleteConnection, deleteQuest, deleteEvent, closeDeleteModal])
+
+  // Keyboard support: Enter to confirm, Escape to cancel
+  useEffect(() => {
+    if (!isDeleteModalOpen) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        handleConfirm()
+      } else if (e.key === 'Escape') {
+        e.preventDefault()
+        closeDeleteModal()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isDeleteModalOpen, handleConfirm, closeDeleteModal])
+
+  // Don't render if modal is closed or no target
+  if (!isDeleteModalOpen || !deleteTarget) {
+    return null
   }
 
   const getTitle = () => {
@@ -33,6 +57,8 @@ export function DeleteModal() {
         return 'Remove Connection?'
       case 'quest':
         return 'Delete Quest?'
+      case 'event':
+        return 'Delete Event?'
     }
   }
 
@@ -44,6 +70,8 @@ export function DeleteModal() {
         return 'This will disconnect these nodes. You can reconnect them later.'
       case 'quest':
         return 'This will permanently delete the quest and all its nodes. This action cannot be undone.'
+      case 'event':
+        return 'This will permanently delete the event and all its parameters. This action cannot be undone. Please be aware that it will not remove existing nodes with this event! It will only remove the event from the event list.'
     }
   }
 
