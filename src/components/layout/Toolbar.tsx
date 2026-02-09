@@ -29,7 +29,6 @@ function saveRecentProject(path: string, name: string) {
 export function Toolbar() {
   const { 
     project, 
-    currentQuestId, 
     filePath, 
     isDirty, 
     setFilePath, 
