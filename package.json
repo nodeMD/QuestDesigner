@@ -11,7 +11,6 @@
     "inflight": "npm:lru-cache@^11.0.0",
     "global-agent": "^4.1.2"
   },
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "dev:electron": "vite",
