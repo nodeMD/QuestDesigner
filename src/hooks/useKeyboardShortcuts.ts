@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useProjectStore } from '@/stores/projectStore'
 import { useUIStore } from '@/stores/uiStore'
 import { exportProject, toJsonString, downloadJson } from '@/utils/export'
@@ -8,7 +8,6 @@ export function useKeyboardShortcuts() {
   const { 
     project, 
     selectedNodeId, 
-    deleteNode, 
     filePath, 
     setFilePath, 
     setDirty,
@@ -20,7 +19,10 @@ export function useKeyboardShortcuts() {
   const { 
     openDeleteModal, 
     setValidationPanelOpen,
-    setValidating 
+    setValidating,
+    openSearch,
+    isSearchOpen,
+    closeSearch
   } = useUIStore()
 
   const handleSave = useCallback(async () => {
@@ -113,6 +115,17 @@ export function useKeyboardShortcuts() {
         return
       }
 
+      // Cmd/Ctrl + F: Search
+      if (isMod && e.key === 'f') {
+        e.preventDefault()
+        if (isSearchOpen) {
+          closeSearch()
+        } else {
+          openSearch()
+        }
+        return
+      }
+
       // Cmd/Ctrl + C: Copy
       if (isMod && e.key === 'c') {
         // Don't prevent default if user is selecting text
@@ -164,6 +177,6 @@ export function useKeyboardShortcuts() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleSave, handleExport, handleValidate, handleDelete, handleCopy, handlePaste, selectedNodeId, setValidationPanelOpen])
+  }, [handleSave, handleExport, handleValidate, handleDelete, handleCopy, handlePaste, selectedNodeId, setValidationPanelOpen, openSearch, closeSearch, isSearchOpen])
 }
 
