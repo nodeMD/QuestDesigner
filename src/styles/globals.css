@@ -249,3 +249,17 @@ textarea {
 .react-flow__node.search-match .quest-node {
   animation: search-pulse 1.5s ease-in-out infinite;
 }
+
+/* Simulation active node highlight */
+@keyframes simulation-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.9), 0 0 20px rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.7), 0 0 30px rgba(34, 197, 94, 0.3);
+  }
+}
+
+.react-flow__node.simulation-active .quest-node {
+  animation: simulation-glow 1.5s ease-in-out infinite;
+}
