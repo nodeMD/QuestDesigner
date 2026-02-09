@@ -77,7 +77,7 @@ export function Canvas() {
     selectedNodeId,
     selectNode,
   } = useProjectStore()
-  const { openContextMenu, openEditPanel, focusNodeId, clearFocusNode } = useUIStore()
+  const { openContextMenu, openEditPanel, focusNodeId, clearFocusNode, searchResultNodeIds } = useUIStore()
   const { setCenter, getZoom } = useReactFlow()
 
   const currentQuest = project?.quests.find(q => q.id === currentQuestId)
@@ -88,11 +88,19 @@ export function Canvas() {
   // Sync nodes from store to local state when quest changes
   useEffect(() => {
     if (currentQuest) {
-      setNodes(currentQuest.nodes.map(questNodeToFlowNode))
+      setNodes(currentQuest.nodes.map((node) => {
+        const flowNode = questNodeToFlowNode(node)
+        // Add search highlight class if node matches search
+        const isSearchMatch = searchResultNodeIds.includes(node.id)
+        if (isSearchMatch) {
+          flowNode.className = 'search-match'
+        }
+        return flowNode
+      }))
     } else {
       setNodes([])
     }
-  }, [currentQuest])
+  }, [currentQuest, searchResultNodeIds])
 
   // Pan to focused node when focusNodeId changes
   useEffect(() => {
@@ -133,11 +141,14 @@ export function Canvas() {
 
   // Handle node changes (position, selection)
   const onNodesChange = useCallback((changes: NodeChange[]) => {
-    // Apply all changes to local state for smooth UI updates
-    setNodes((nds) => applyNodeChanges(changes, nds))
+    // Filter out 'remove' changes - we handle deletion through our own modal/confirmation flow
+    const filteredChanges = changes.filter(change => change.type !== 'remove')
+    
+    // Apply filtered changes to local state for smooth UI updates
+    setNodes((nds) => applyNodeChanges(filteredChanges, nds))
     
     // Handle specific changes
-    changes.forEach(change => {
+    filteredChanges.forEach(change => {
       // Persist position to store only when drag ends
       if (change.type === 'position' && change.dragging === false && change.position) {
         updateNode(change.id, { position: change.position })
