@@ -8,6 +8,7 @@ import { NodeEditPanel } from '@/components/panels/NodeEditPanel'
 import { ValidationPanel } from '@/components/panels/ValidationPanel'
 import { SearchPanel } from '@/components/panels/SearchPanel'
 import { EventEditPanel } from '@/components/panels/EventEditPanel'
+import { SimulationPanel } from '@/components/panels/SimulationPanel'
 import { ContextMenu } from '@/components/ui/ContextMenu'
 import { DeleteModal } from '@/components/ui/DeleteModal'
 import { WelcomeScreen } from '@/components/WelcomeScreen'
@@ -79,6 +80,9 @@ function App() {
         
         {/* Search panel */}
         <SearchPanel />
+        
+        {/* Simulation panel */}
+        <SimulationPanel />
         
         {/* Delete confirmation modal */}
         <DeleteModal />
