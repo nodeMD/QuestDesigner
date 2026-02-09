@@ -3,7 +3,7 @@ import { X, Check, Plus, Trash2, GripVertical } from 'lucide-react'
 import { v4 as uuid } from 'uuid'
 import { useProjectStore } from '@/stores/projectStore'
 import { useUIStore } from '@/stores/uiStore'
-import type { QuestNode, Option, StartNode, DialogueNode, ChoiceNode, EndNode, EventNode, IfNode, AndNode, OrNode } from '@/types'
+import type { QuestNode, Option, StartNode, DialogueNode, ChoiceNode, EndNode, EventNode, IfNode, AndNode, OrNode, GlobalEvent } from '@/types'
 
 export function NodeEditPanel() {
   const { isEditPanelOpen, editingNodeId, closeEditPanel } = useUIStore()
@@ -324,8 +324,20 @@ function EventNodeFields({
 }: { 
   node: EventNode; 
   onUpdate: (u: Partial<EventNode>) => void;
-  events: { id: string; name: string }[]
+  events: GlobalEvent[]
 }) {
+  const selectedEvent = events.find(e => e.id === node.eventId)
+  const eventParams = selectedEvent?.parameters || []
+  
+  const handleParamChange = (paramName: string, value: unknown) => {
+    onUpdate({
+      parameters: {
+        ...(node.parameters || {}),
+        [paramName]: value
+      }
+    })
+  }
+  
   return (
     <>
       <div>
@@ -346,7 +358,12 @@ function EventNodeFields({
           value={node.eventId}
           onChange={(e) => {
             const event = events.find(ev => ev.id === e.target.value)
-            onUpdate({ eventId: e.target.value, eventName: event?.name })
+            onUpdate({ 
+              eventId: e.target.value, 
+              eventName: event?.name,
+              // Reset parameters when changing event
+              parameters: {}
+            })
           }}
           className="w-full text-sm"
         >
@@ -356,6 +373,51 @@ function EventNodeFields({
           ))}
         </select>
       </div>
+
+      {/* Event Parameters */}
+      {eventParams.length > 0 && (
+        <div className="mt-4 pt-4 border-t border-panel-border">
+          <label className="block text-xs font-medium text-text-muted mb-2">Event Parameters</label>
+          <div className="space-y-3">
+            {eventParams.map((param) => (
+              <div key={param.name} className="bg-sidebar-bg p-3 rounded-lg">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-medium text-text-secondary">{param.name}</label>
+                  <span className="text-xs text-text-muted capitalize">{param.type}</span>
+                </div>
+                {param.description && (
+                  <p className="text-xs text-text-muted mb-2">{param.description}</p>
+                )}
+                {param.type === 'boolean' ? (
+                  <select
+                    value={(node.parameters?.[param.name] ?? param.defaultValue ?? false) === true ? 'true' : 'false'}
+                    onChange={(e) => handleParamChange(param.name, e.target.value === 'true')}
+                    className="w-full text-sm"
+                  >
+                    <option value="false">false</option>
+                    <option value="true">true</option>
+                  </select>
+                ) : param.type === 'number' ? (
+                  <input
+                    type="number"
+                    value={(node.parameters?.[param.name] ?? param.defaultValue ?? 0) as number}
+                    onChange={(e) => handleParamChange(param.name, parseFloat(e.target.value) || 0)}
+                    className="w-full text-sm"
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    value={(node.parameters?.[param.name] ?? param.defaultValue ?? '') as string}
+                    onChange={(e) => handleParamChange(param.name, e.target.value)}
+                    className="w-full text-sm"
+                    placeholder={param.defaultValue?.toString() || 'Value...'}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   )
 }
