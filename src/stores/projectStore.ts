@@ -35,6 +35,7 @@ interface ProjectState {
   selectQuest: (questId: string) => void
   updateQuest: (questId: string, updates: Partial<Quest>) => void
   deleteQuest: (questId: string) => void
+  importQuest: (quest: Quest) => void
   
   // Node actions
   addNode: (type: NodeType, position: Position) => QuestNode | null
@@ -55,6 +56,12 @@ interface ProjectState {
   updateEvent: (eventId: string, updates: Partial<GlobalEvent>) => void
   deleteEvent: (eventId: string) => void
   
+  // Settings actions
+  toggleAutoSave: () => void
+  
+  // Layout actions
+  applyAutoLayout: (positions: Map<string, Position>) => void
+  
   // Helpers
   getCurrentQuest: () => Quest | null
   getNode: (nodeId: string) => QuestNode | undefined
@@ -69,8 +76,8 @@ const createDefaultProject = (name: string): Project => ({
   quests: [],
   events: [],
   settings: {
-    autoSave: true,
-    autoSaveInterval: 30,
+    autoSave: false,
+    autoSaveInterval: 40,
     gridSnap: true,
     gridSize: 20,
   },
@@ -244,6 +251,21 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         updatedAt: new Date(),
       },
       currentQuestId: currentQuestId === questId ? (newQuests[0]?.id ?? null) : currentQuestId,
+      isDirty: true,
+    })
+  },
+
+  importQuest: (quest) => {
+    const { project } = get()
+    if (!project) return
+
+    set({
+      project: {
+        ...project,
+        quests: [...project.quests, quest],
+        updatedAt: new Date(),
+      },
+      currentQuestId: quest.id,
       isDirty: true,
     })
   },
@@ -460,6 +482,53 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       project: {
         ...project,
         events: project.events.filter((e) => e.id !== eventId),
+        updatedAt: new Date(),
+      },
+      isDirty: true,
+    })
+  },
+
+  toggleAutoSave: () => {
+    const { project } = get()
+    if (!project) return
+    
+    set({
+      project: {
+        ...project,
+        settings: {
+          ...project.settings,
+          autoSave: !project.settings.autoSave,
+        },
+        updatedAt: new Date(),
+      },
+      isDirty: true,
+    })
+  },
+
+  applyAutoLayout: (positions: Map<string, Position>) => {
+    const { project, currentQuestId } = get()
+    if (!project || !currentQuestId) return
+    
+    const questIndex = project.quests.findIndex((q) => q.id === currentQuestId)
+    if (questIndex === -1) return
+    
+    const quest = project.quests[questIndex]
+    const updatedNodes = quest.nodes.map((node) => {
+      const newPos = positions.get(node.id)
+      if (newPos) {
+        return { ...node, position: newPos }
+      }
+      return node
+    })
+    
+    const updatedQuest = { ...quest, nodes: updatedNodes }
+    const updatedQuests = [...project.quests]
+    updatedQuests[questIndex] = updatedQuest
+    
+    set({
+      project: {
+        ...project,
+        quests: updatedQuests,
         updatedAt: new Date(),
       },
       isDirty: true,
