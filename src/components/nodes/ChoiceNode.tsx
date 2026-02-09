@@ -2,12 +2,14 @@ import { memo } from 'react'
 import { Handle, Position, NodeProps } from '@xyflow/react'
 import { GitBranch } from 'lucide-react'
 import type { ChoiceNode as ChoiceNodeType } from '@/types'
+import { NodeActions } from './NodeActions'
 
-export const ChoiceNode = memo(({ data, selected }: NodeProps) => {
+export const ChoiceNode = memo(({ data, selected, id }: NodeProps) => {
   const node = data as unknown as ChoiceNodeType
 
   return (
-    <div className={`quest-node node-choice ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
+    <div className={`quest-node node-choice group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
+      <NodeActions nodeId={id} />
       {/* Input handle */}
       <Handle
         type="target"

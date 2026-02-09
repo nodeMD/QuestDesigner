@@ -2,13 +2,15 @@ import { memo } from 'react'
 import { Handle, Position, NodeProps } from '@xyflow/react'
 import { Zap, Target, Search } from 'lucide-react'
 import type { EventNode as EventNodeType } from '@/types'
+import { NodeActions } from './NodeActions'
 
-export const EventNode = memo(({ data, selected }: NodeProps) => {
+export const EventNode = memo(({ data, selected, id }: NodeProps) => {
   const node = data as unknown as EventNodeType
   const isTrigger = node.action === 'TRIGGER'
 
   return (
-    <div className={`quest-node node-event ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
+    <div className={`quest-node node-event group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
+      <NodeActions nodeId={id} />
       {/* Input handle */}
       <Handle
         type="target"

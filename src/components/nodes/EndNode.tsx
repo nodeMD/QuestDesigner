@@ -2,8 +2,9 @@ import { memo } from 'react'
 import { Handle, Position, NodeProps } from '@xyflow/react'
 import { Square, Trophy, XCircle, Minus, Gift, Users } from 'lucide-react'
 import type { EndNode as EndNodeType } from '@/types'
+import { NodeActions } from './NodeActions'
 
-export const EndNode = memo(({ data, selected }: NodeProps) => {
+export const EndNode = memo(({ data, selected, id }: NodeProps) => {
   const node = data as unknown as EndNodeType
 
   const OutcomeIcon = node.outcome === 'SUCCESS' 
@@ -19,7 +20,8 @@ export const EndNode = memo(({ data, selected }: NodeProps) => {
       : 'text-text-secondary'
 
   return (
-    <div className={`quest-node node-end ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
+    <div className={`quest-node node-end group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
+      <NodeActions nodeId={id} />
       {/* Input handle */}
       <Handle
         type="target"

@@ -2,10 +2,11 @@ import { memo } from 'react'
 import { Handle, Position, NodeProps } from '@xyflow/react'
 import { HelpCircle, GitMerge, GitPullRequest } from 'lucide-react'
 import type { IfNode, AndNode, OrNode } from '@/types'
+import { NodeActions } from './NodeActions'
 
 type ConditionNodeType = IfNode | AndNode | OrNode
 
-export const ConditionNode = memo(({ data, selected }: NodeProps) => {
+export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
   const node = data as unknown as ConditionNodeType
   const isIf = node.type === 'IF'
   const isAnd = node.type === 'AND'
@@ -15,7 +16,8 @@ export const ConditionNode = memo(({ data, selected }: NodeProps) => {
   const label = isIf ? 'IF' : isAnd ? 'AND' : 'OR'
 
   return (
-    <div className={`quest-node node-condition ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
+    <div className={`quest-node node-condition group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
+      <NodeActions nodeId={id} />
       {/* Input handle(s) */}
       {(isAnd || isOr) ? (
         // Multiple inputs for AND/OR - rendered in the content area

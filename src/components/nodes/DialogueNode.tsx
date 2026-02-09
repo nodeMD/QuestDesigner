@@ -2,12 +2,14 @@ import { memo } from 'react'
 import { Handle, Position, NodeProps } from '@xyflow/react'
 import { MessageSquare, User } from 'lucide-react'
 import type { DialogueNode as DialogueNodeType } from '@/types'
+import { NodeActions } from './NodeActions'
 
-export const DialogueNode = memo(({ data, selected }: NodeProps) => {
+export const DialogueNode = memo(({ data, selected, id }: NodeProps) => {
   const node = data as unknown as DialogueNodeType
 
   return (
-    <div className={`quest-node node-dialogue ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
+    <div className={`quest-node node-dialogue group relative ${selected ? 'ring-2 ring-accent-blue' : ''}`}>
+      <NodeActions nodeId={id} />
       {/* Input handle */}
       <Handle
         type="target"
