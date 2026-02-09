@@ -39,6 +39,11 @@ interface UIState {
   searchResultNodeIds: string[]
   isSearchOpen: boolean
   
+  // Simulation/Preview
+  isSimulationOpen: boolean
+  simulationNodeId: string | null
+  simulationHistory: string[]
+  
   // Actions
   openEditPanel: (nodeId: string) => void
   closeEditPanel: () => void
@@ -64,6 +69,12 @@ interface UIState {
   setSearchResults: (nodeIds: string[]) => void
   openSearch: () => void
   closeSearch: () => void
+  
+  // Simulation actions
+  startSimulation: (startNodeId: string) => void
+  stopSimulation: () => void
+  goToNode: (nodeId: string) => void
+  goBack: () => void
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -92,6 +103,10 @@ export const useUIStore = create<UIState>((set) => ({
   searchQuery: '',
   searchResultNodeIds: [],
   isSearchOpen: false,
+  
+  isSimulationOpen: false,
+  simulationNodeId: null,
+  simulationHistory: [],
 
   openEditPanel: (nodeId) => set({ isEditPanelOpen: true, editingNodeId: nodeId }),
   closeEditPanel: () => set({ isEditPanelOpen: false, editingNodeId: null }),
@@ -123,5 +138,28 @@ export const useUIStore = create<UIState>((set) => ({
   setSearchResults: (nodeIds) => set({ searchResultNodeIds: nodeIds }),
   openSearch: () => set({ isSearchOpen: true }),
   closeSearch: () => set({ isSearchOpen: false, searchQuery: '', searchResultNodeIds: [] }),
+  
+  startSimulation: (startNodeId) => set({ 
+    isSimulationOpen: true, 
+    simulationNodeId: startNodeId,
+    simulationHistory: [startNodeId]
+  }),
+  stopSimulation: () => set({ 
+    isSimulationOpen: false, 
+    simulationNodeId: null,
+    simulationHistory: []
+  }),
+  goToNode: (nodeId) => set((state) => ({ 
+    simulationNodeId: nodeId,
+    simulationHistory: [...state.simulationHistory, nodeId]
+  })),
+  goBack: () => set((state) => {
+    if (state.simulationHistory.length <= 1) return state
+    const newHistory = state.simulationHistory.slice(0, -1)
+    return {
+      simulationNodeId: newHistory[newHistory.length - 1],
+      simulationHistory: newHistory
+    }
+  }),
 }))
 
