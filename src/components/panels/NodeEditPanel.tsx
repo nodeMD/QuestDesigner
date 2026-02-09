@@ -3,7 +3,7 @@ import { X, Check, Plus, Trash2, GripVertical } from 'lucide-react'
 import { v4 as uuid } from 'uuid'
 import { useProjectStore } from '@/stores/projectStore'
 import { useUIStore } from '@/stores/uiStore'
-import type { QuestNode, Option, StartNode, DialogueNode, ChoiceNode, EndNode, EventNode, IfNode } from '@/types'
+import type { QuestNode, Option, StartNode, DialogueNode, ChoiceNode, EndNode, EventNode, IfNode, AndNode, OrNode } from '@/types'
 
 export function NodeEditPanel() {
   const { isEditPanelOpen, editingNodeId, closeEditPanel } = useUIStore()
@@ -79,6 +79,10 @@ export function NodeEditPanel() {
         return <EventNodeFields node={localNode as EventNode} onUpdate={updateLocalNode} events={project?.events || []} />
       case 'IF':
         return <IfNodeFields node={localNode as IfNode} onUpdate={updateLocalNode} />
+      case 'AND':
+        return <AndOrNodeFields node={localNode as AndNode} onUpdate={updateLocalNode} />
+      case 'OR':
+        return <AndOrNodeFields node={localNode as OrNode} onUpdate={updateLocalNode} />
       case 'END':
         return <EndNodeFields node={localNode as EndNode} onUpdate={updateLocalNode} />
       default:
@@ -401,6 +405,45 @@ function EndNodeFields({ node, onUpdate }: { node: EndNode; onUpdate: (u: Partia
         />
       </div>
     </>
+  )
+}
+
+function AndOrNodeFields({ node, onUpdate }: { node: AndNode | OrNode; onUpdate: (u: Partial<AndNode | OrNode>) => void }) {
+  const handleInputCountChange = (delta: number) => {
+    const newCount = Math.max(2, node.inputCount + delta)
+    onUpdate({ inputCount: newCount })
+  }
+
+  return (
+    <div>
+      <label className="block text-xs font-medium text-text-muted mb-1">Number of Inputs</label>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => handleInputCountChange(-1)}
+          disabled={node.inputCount <= 2}
+          className="w-8 h-8 flex items-center justify-center rounded bg-sidebar-bg hover:bg-sidebar-hover disabled:opacity-50 disabled:cursor-not-allowed text-text-primary font-bold transition-colors"
+        >
+          −
+        </button>
+        <span className="text-lg font-mono text-text-primary min-w-[2ch] text-center">
+          {node.inputCount}
+        </span>
+        <button
+          type="button"
+          onClick={() => handleInputCountChange(1)}
+          className="w-8 h-8 flex items-center justify-center rounded bg-sidebar-bg hover:bg-sidebar-hover text-text-primary font-bold transition-colors"
+        >
+          +
+        </button>
+      </div>
+      <p className="text-xs text-text-muted mt-2">
+        {node.type === 'AND' 
+          ? 'All inputs must be connected for the condition to pass'
+          : 'Any input being connected will allow the condition to pass'
+        }
+      </p>
+    </div>
   )
 }
 
