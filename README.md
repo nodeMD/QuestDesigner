@@ -180,7 +180,6 @@ QuestDesigner/
 │   ├── types/         # TypeScript type definitions
 │   ├── utils/         # Utility functions
 │   └── styles/        # Global styles
-├── SPEC.md            # Detailed specification
 ├── CONTRIBUTING.md    # Contribution guidelines
 └── LICENSE.md         # License information
 ```
