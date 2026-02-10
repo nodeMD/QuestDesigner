@@ -921,9 +921,12 @@ interface FactionChange {
 quest-designer/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml                # CI pipeline (tests, lint, build)
+│       └── ci.yml               # CI pipeline (tests, lint, build)
 ├── build/
-│   └── icon.png                  # App icon
+│   └── icon.png                 # App icon
+├── demo/
+│   ├── README.md                # Demo project documentation
+│   └── quest-designer-demo.json # Demo project
 ├── e2e/
 │   └── app.spec.ts              # End-to-end Playwright tests
 ├── electron/

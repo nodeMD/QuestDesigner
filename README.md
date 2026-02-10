@@ -164,32 +164,9 @@ npm run typecheck
 - **Vitest** - Unit testing
 - **Playwright** - End-to-end testing
 
-## Project Structure
+## Detailed Documentation
 
-```
-QuestDesigner/
-├── .github/workflows/  # CI pipeline (GitHub Actions)
-├── e2e/                # End-to-end Playwright tests
-├── electron/           # Electron main process
-│   ├── main.ts         # Main process entry + IPC handlers
-│   └── preload.ts      # Preload script (contextBridge)
-├── src/
-│   ├── components/     # React components
-│   │   ├── layout/     # Canvas, Sidebar, Toolbar, StatusBar
-│   │   ├── nodes/      # Node type components + NodeActions
-│   │   ├── panels/     # Edit, Validation, Search, Simulation panels
-│   │   ├── edges/      # Custom edge components
-│   │   └── ui/         # Context Menu, Delete Modal
-│   ├── hooks/          # useAutoSave, useKeyboardShortcuts
-│   ├── stores/         # Zustand stores (project, UI)
-│   ├── types/          # TypeScript type definitions
-│   ├── utils/          # Export, validation, search, auto-layout
-│   └── styles/         # Global styles
-├── SPEC.md             # Detailed technical specification
-├── README.md           # This file
-├── CONTRIBUTING.md     # Contribution guidelines
-└── LICENSE.md          # License information
-```
+Please see [SPEC.md](SPEC.md) for all of the details.
 
 ## Contributing
 
