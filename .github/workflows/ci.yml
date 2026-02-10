@@ -70,13 +70,11 @@ jobs:
       - name: Run E2E tests (Linux)
         if: runner.os == 'Linux'
         run: xvfb-run --auto-servernum -- npm run test:e2e
-        continue-on-error: true
 
       # Run E2E tests directly on macOS/Windows
       - name: Run E2E tests (macOS/Windows)
         if: runner.os != 'Linux'
         run: npm run test:e2e
-        continue-on-error: true
 
       - name: Upload Playwright report
         if: always()
