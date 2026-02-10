@@ -1,6 +1,8 @@
-# Quest Designer
+# Quest Designer (BETA)
 
 A visual node-based quest design tool for game developers. Create complex, branching quest narratives with an intuitive drag-and-drop interface inspired by Unreal Engine Blueprints.
+
+https://nodemd.itch.io/quest-designer
 
 [![CI](https://github.com/nodeMD/QuestDesigner/actions/workflows/ci.yml/badge.svg)](https://github.com/nodeMD/QuestDesigner/actions/workflows/ci.yml)
 [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#installation)
@@ -74,6 +76,20 @@ npm run build:linux    # Creates AppImage for Linux
 > For cross-platform builds, use CI/CD (like GitHub Actions) or tools like [electron-builder's remote build](https://www.electron.build/multi-platform-build).
 
 Built packages are output to the `release/` directory.
+
+### Releasing
+
+To publish a release with executables for Windows, macOS, and Linux:
+
+1. Bump the version in `package.json` if needed.
+2. Commit your changes, then create and push a tag (e.g. `v0.1.0`):
+
+   ```bash
+   git tag v0.1.0
+   git push origin v0.1.0
+   ```
+
+3. The [Release](.github/workflows/release.yml) workflow runs on tag push (`v*`), builds the app on all three platforms, and creates a [GitHub Release](https://docs.github.com/en/repositories/releasing-projects-on-github) with the installers attached (e.g. `.dmg`, `.exe`, `.AppImage`).
 
 ### Running Tests
 
