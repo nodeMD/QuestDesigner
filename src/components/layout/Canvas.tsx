@@ -131,7 +131,7 @@ export function Canvas() {
         // Center the viewport on the node with a smooth animation
         const zoom = getZoom()
         setCenter(
-          node.position.x + 140, // Add half the node width (~280px) to center it
+          node.position.x + 100, // Add half the node width (~200px) to center it
           node.position.y + 50, // Add some offset for the node height
           { zoom: Math.max(zoom, 0.8), duration: 500 }
         )
@@ -278,6 +278,7 @@ export function Canvas() {
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       fitView
+      fitViewOptions={{ maxZoom: 1 }}
       snapToGrid
       snapGrid={[20, 20]}
       minZoom={0.1}

@@ -1,20 +1,22 @@
-import { useReactFlow } from '@xyflow/react'
+import { useOnViewportChange } from '@xyflow/react'
 import { Circle } from 'lucide-react'
 import { useProjectStore } from '@/stores/projectStore'
-import { useState, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 
 export function StatusBar() {
   const { project, currentQuestId, isDirty } = useProjectStore()
   const [zoom, setZoom] = useState(1)
 
-  // Get React Flow instance - must be called unconditionally
-  const reactFlowInstance = useReactFlow()
+  // Listen for viewport changes to keep zoom level in sync
+  const onViewportChange = useCallback((viewport: { zoom: number }) => {
+    setZoom(viewport.zoom)
+  }, [])
 
-  useEffect(() => {
-    if (reactFlowInstance) {
-      setZoom(reactFlowInstance.getZoom())
-    }
-  }, [reactFlowInstance])
+  useOnViewportChange({
+    onStart: onViewportChange,
+    onChange: onViewportChange,
+    onEnd: onViewportChange,
+  })
 
   const currentQuest = project?.quests.find((q) => q.id === currentQuestId)
   const nodeCount = currentQuest?.nodes.length ?? 0

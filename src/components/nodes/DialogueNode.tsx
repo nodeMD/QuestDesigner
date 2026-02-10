@@ -37,7 +37,7 @@ export const DialogueNode = memo(({ data, selected, id }: NodeProps) => {
 
       {/* Text content */}
       <div className="quest-node-content">
-        <p className="text-text-primary text-sm line-clamp-4">"{node.text}"</p>
+        <p className="text-text-primary text-sm line-clamp-8">"{node.text}"</p>
       </div>
 
       {/* Options */}

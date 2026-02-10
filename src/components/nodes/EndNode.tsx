@@ -36,7 +36,7 @@ export const EndNode = memo(({ data, selected, id }: NodeProps) => {
       <div className="quest-node-content">
         <p className="text-text-primary font-medium">{node.title}</p>
         {node.description && (
-          <p className="text-text-secondary text-sm mt-1 line-clamp-2">{node.description}</p>
+          <p className="text-text-secondary text-sm mt-1 line-clamp-4">{node.description}</p>
         )}
       </div>
 
