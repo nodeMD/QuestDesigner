@@ -1,5 +1,11 @@
 import type { Quest, QuestNode, Position } from '@/types'
 
+/** Measured dimensions from the DOM (provided by React Flow) */
+export interface MeasuredNodeDimensions {
+  width: number
+  height: number
+}
+
 interface LayoutOptions {
   direction?: 'TB' | 'LR' // Top-Bottom or Left-Right
   nodeWidth?: number
@@ -11,9 +17,9 @@ interface LayoutOptions {
 const DEFAULT_OPTIONS: Required<LayoutOptions> = {
   direction: 'TB',
   nodeWidth: 300,
-  nodeHeight: 120,
+  nodeHeight: 150,
   horizontalSpacing: 80,
-  verticalSpacing: 140,
+  verticalSpacing: 60,
 }
 
 interface LayoutNode {
@@ -27,10 +33,18 @@ interface LayoutNode {
 }
 
 /**
- * Auto-layout nodes in a quest using a simple hierarchical algorithm
- * Returns new positions for each node
+ * Auto-layout nodes in a quest using a simple hierarchical algorithm.
+ * Returns new positions for each node.
+ *
+ * @param quest - The quest to layout
+ * @param measuredDimensions - Actual DOM-measured node sizes from React Flow (preferred)
+ * @param options - Layout configuration overrides
  */
-export function autoLayoutQuest(quest: Quest, options: LayoutOptions = {}): Map<string, Position> {
+export function autoLayoutQuest(
+  quest: Quest,
+  measuredDimensions?: Map<string, MeasuredNodeDimensions>,
+  options: LayoutOptions = {},
+): Map<string, Position> {
   const opts = { ...DEFAULT_OPTIONS, ...options }
 
   if (quest.nodes.length === 0) {
@@ -40,14 +54,15 @@ export function autoLayoutQuest(quest: Quest, options: LayoutOptions = {}): Map<
   // Build adjacency lists
   const layoutNodes = new Map<string, LayoutNode>()
 
-  // Initialize nodes
+  // Initialize nodes - prefer DOM-measured dimensions, fall back to estimates
   quest.nodes.forEach((node) => {
+    const measured = measuredDimensions?.get(node.id)
     layoutNodes.set(node.id, {
       id: node.id,
       level: -1,
       index: 0,
-      width: opts.nodeWidth,
-      height: getNodeHeight(node),
+      width: measured?.width || opts.nodeWidth,
+      height: measured?.height || getNodeHeight(node),
       children: [],
       parents: [],
     })
@@ -123,6 +138,31 @@ export function autoLayoutQuest(quest: Quest, options: LayoutOptions = {}): Map<
     })
   })
 
+  // Calculate the maximum height for each level based on actual node content
+  const maxLevel = Math.max(...Array.from(levels.keys()))
+  const levelMaxHeights = new Map<number, number>()
+  for (let lvl = 0; lvl <= maxLevel; lvl++) {
+    const nodeIds = levels.get(lvl) || []
+    let maxH = 0
+    nodeIds.forEach((id) => {
+      const n = layoutNodes.get(id)
+      if (n) {
+        maxH = Math.max(maxH, n.height)
+      }
+    })
+    // Use at least a sensible minimum for empty/tiny nodes
+    levelMaxHeights.set(lvl, Math.max(maxH, 80))
+  }
+
+  // Pre-compute cumulative Y offsets per level based on actual max heights
+  const levelYOffset = new Map<number, number>()
+  let cumulativeY = 0
+  for (let lvl = 0; lvl <= maxLevel; lvl++) {
+    levelYOffset.set(lvl, cumulativeY)
+    const levelH = levelMaxHeights.get(lvl) || opts.nodeHeight
+    cumulativeY += levelH + opts.verticalSpacing
+  }
+
   // Calculate positions
   const positions = new Map<string, Position>()
   const maxNodesInLevel = Math.max(...Array.from(levels.values()).map((n) => n.length))
@@ -142,10 +182,10 @@ export function autoLayoutQuest(quest: Quest, options: LayoutOptions = {}): Map<
 
     if (opts.direction === 'TB') {
       x = startX + node.index * (opts.nodeWidth + opts.horizontalSpacing)
-      y = node.level * (opts.nodeHeight + opts.verticalSpacing)
+      y = levelYOffset.get(node.level) || 0
     } else {
       // Left to Right
-      x = node.level * (opts.nodeWidth + opts.horizontalSpacing)
+      x = levelYOffset.get(node.level) || 0
       y = startX + node.index * (opts.nodeHeight + opts.verticalSpacing)
     }
 
@@ -163,42 +203,106 @@ export function autoLayoutQuest(quest: Quest, options: LayoutOptions = {}): Map<
 }
 
 /**
+ * Estimate how many lines a text block will take given a container width.
+ * Uses ~6px average character width for Inter font at text-sm (14px).
+ * This is deliberately conservative (fewer chars per line = more lines)
+ * so that the layout slightly overestimates rather than underestimates.
+ */
+function estimateTextLines(text: string, containerWidth: number): number {
+  if (!text) return 0
+  const charsPerLine = Math.max(1, Math.floor(containerWidth / 6))
+  return Math.ceil(text.length / charsPerLine)
+}
+
+// Node content area width: max-width 280px minus horizontal padding (px-3 = 12px * 2)
+const NODE_CONTENT_WIDTH = 280 - 24
+// Line height for text-sm in Tailwind (1.25rem = 20px)
+const LINE_HEIGHT = 20
+
+/**
  * Get estimated height for a node based on its type and content
  */
 function getNodeHeight(node: QuestNode): number {
-  const baseHeight = 80
+  // Header (~36px) + border/padding overhead (~8px)
+  const headerHeight = 44
 
   switch (node.type) {
-    case 'START':
-      return baseHeight
+    case 'START': {
+      const startNode = node as {
+        description?: string
+        location?: { name?: string }
+        npc?: { name?: string }
+        options?: unknown[]
+      }
+      let h = headerHeight
+      // Location + NPC meta rows (rendered as compact info lines)
+      if (startNode.location?.name || startNode.npc?.name) {
+        let metaH = 16 // py-2 padding top+bottom
+        if (startNode.location?.name) metaH += 20
+        if (startNode.npc?.name) metaH += 20
+        h += metaH
+      }
+      // Description text
+      const descLines = estimateTextLines(startNode.description || '', NODE_CONTENT_WIDTH)
+      h += descLines * LINE_HEIGHT + 16 // padding
+      // Options
+      const optCount = startNode.options?.length || 0
+      h += optCount * 30
+      return Math.max(80, h)
+    }
 
     case 'DIALOGUE': {
-      const dialogueNode = node as { options?: unknown[] }
+      const dialogueNode = node as { speaker?: string; text?: string; options?: unknown[] }
+      let h = headerHeight
+      // Speaker line
+      if (dialogueNode.speaker) h += 32
+      // Text content – estimate full rendered height
+      const textLines = estimateTextLines(dialogueNode.text || '', NODE_CONTENT_WIDTH)
+      h += textLines * LINE_HEIGHT + 16 // padding
+      // Options
       const optionCount = dialogueNode.options?.length || 0
-      return baseHeight + Math.max(0, optionCount - 1) * 30
+      h += optionCount * 30
+      return Math.max(80, h)
     }
 
     case 'CHOICE': {
-      const choiceNode = node as { options?: unknown[] }
+      const choiceNode = node as { prompt?: string; options?: unknown[] }
+      let h = headerHeight
+      // Prompt text
+      const promptLines = estimateTextLines(choiceNode.prompt || '', NODE_CONTENT_WIDTH)
+      h += promptLines * LINE_HEIGHT + 16
+      // Options
       const choiceCount = choiceNode.options?.length || 0
-      return baseHeight + Math.max(0, choiceCount - 1) * 30
+      h += choiceCount * 30
+      return Math.max(80, h)
     }
 
     case 'IF':
     case 'AND':
     case 'OR': {
-      const conditionNode = node as { inputCount?: number }
+      const conditionNode = node as { inputCount?: number; condition?: string }
+      let h = headerHeight
+      const condLines = estimateTextLines(conditionNode.condition || '', NODE_CONTENT_WIDTH)
+      h += condLines * LINE_HEIGHT + 16
       const inputCount = conditionNode.inputCount || 2
-      return baseHeight + Math.max(0, inputCount - 2) * 20
+      h += Math.max(0, inputCount - 2) * 20
+      return Math.max(80, h)
     }
 
     case 'EVENT':
-      return baseHeight + 20
+      return headerHeight + 40
 
-    case 'END':
-      return baseHeight
+    case 'END': {
+      const endNode = node as { description?: string; rewards?: unknown[]; factionChanges?: unknown[] }
+      let h = headerHeight + 32 // outcome badge
+      const descLines = estimateTextLines(endNode.description || '', NODE_CONTENT_WIDTH)
+      h += descLines * LINE_HEIGHT + 16
+      h += (endNode.rewards?.length || 0) * 24
+      h += (endNode.factionChanges?.length || 0) * 24
+      return Math.max(80, h)
+    }
 
     default:
-      return baseHeight
+      return 80
   }
 }
