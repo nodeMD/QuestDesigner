@@ -6,6 +6,9 @@ A visual node-based quest design tool for game developers. Create complex, branc
 [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#installation)
 [![License](https://img.shields.io/badge/License-Quest%20Designer%20License-green)](LICENSE.md)
 
+<img width="2770" height="1776" alt="image" src="https://github.com/user-attachments/assets/1a2a75c2-386e-4aa4-a58b-840fb580844c" />
+
+
 ## Features
 
 ### Node-Based Editor
