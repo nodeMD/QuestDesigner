@@ -1,5 +1,12 @@
 import { describe, it, expect, vi } from 'vitest'
-import { exportQuest, exportProject, toJsonString, parseImportedQuest } from './export'
+import {
+  exportQuest,
+  exportProject,
+  toJsonString,
+  parseImportedQuest,
+  convertExportedProjectToProject,
+  parseProjectFile,
+} from './export'
 import type { Quest, Project, StartNode, EndNode } from '@/types'
 
 // Mock uuid
@@ -321,5 +328,178 @@ describe('parseImportedQuest', () => {
     expect(quest!.viewport).toEqual({ x: 0, y: 0, zoom: 1 })
     expect(quest!.createdAt).toBeInstanceOf(Date)
     expect(quest!.updatedAt).toBeInstanceOf(Date)
+  })
+})
+
+describe('convertExportedProjectToProject', () => {
+  it('should convert exported format to full Project', () => {
+    const exported = {
+      version: '1.0.0',
+      exportedAt: '2024-01-01T00:00:00.000Z',
+      project: {
+        name: 'Exported Game',
+        quests: [
+          {
+            id: 'q1',
+            name: 'First Quest',
+            nodes: [{ id: 'n1', type: 'START', position: { x: 0, y: 0 }, title: 'S', description: '', options: [] }],
+            connections: [],
+          },
+        ],
+        events: [
+          { id: 'e1', name: 'Event1', parameters: [{ name: 'x', type: 'number' }] },
+        ],
+      },
+    }
+
+    const project = convertExportedProjectToProject(exported)
+
+    expect(project.name).toBe('Exported Game')
+    expect(project.version).toBe('1.0.0')
+    expect(project.quests).toHaveLength(1)
+    expect(project.quests[0].name).toBe('First Quest')
+    expect(project.quests[0].nodes).toHaveLength(1)
+    expect(project.quests[0].viewport).toEqual({ x: 0, y: 0, zoom: 1 })
+    expect(project.quests[0].createdAt).toBeInstanceOf(Date)
+    expect(project.events).toHaveLength(1)
+    expect(project.events[0].name).toBe('Event1')
+    expect(project.events[0].usedInQuests).toEqual([])
+    expect(project.settings.autoSave).toBe(false)
+  })
+})
+
+describe('parseProjectFile', () => {
+  it('should parse exported format (Export Entire Project) and return valid Project', () => {
+    const project = createProject({
+      name: 'Round Trip Project',
+      quests: [
+        createQuest({
+          id: 'quest-a',
+          name: 'Quest A',
+          nodes: [createStartNode(), createEndNode()],
+          connections: [
+            { id: 'c1', sourceNodeId: 'start-1', sourceOptionId: 'opt-1', targetNodeId: 'end-1' },
+          ],
+        }),
+      ],
+      events: [
+        {
+          id: 'evt-1',
+          name: 'MyEvent',
+          usedInQuests: ['quest-a'],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    })
+
+    const exported = exportProject(project)
+    const jsonString = toJsonString(exported)
+    const reopened = parseProjectFile(jsonString)
+
+    expect(reopened.name).toBe(project.name)
+    expect(reopened.quests).toHaveLength(project.quests.length)
+    expect(reopened.events).toHaveLength(project.events.length)
+    expect(reopened.quests[0].name).toBe(project.quests[0].name)
+    expect(reopened.quests[0].nodes).toHaveLength(2)
+    expect(reopened.quests[0].connections).toHaveLength(1)
+    expect(reopened.quests[0].connections[0].sourceNodeId).toBe('start-1')
+    expect(reopened.quests[0].connections[0].targetNodeId).toBe('end-1')
+    expect(reopened.events[0].name).toBe('MyEvent')
+    expect(reopened.settings).toBeDefined()
+    expect(reopened.createdAt).toBeInstanceOf(Date)
+    expect(reopened.updatedAt).toBeInstanceOf(Date)
+  })
+
+  it('should parse internal format (Save Project) and return valid Project', () => {
+    const internalJson = JSON.stringify({
+      id: 'internal-1',
+      name: 'Saved Project',
+      version: '1.0.0',
+      createdAt: '2024-06-01T12:00:00.000Z',
+      updatedAt: '2024-06-02T12:00:00.000Z',
+      quests: [
+        {
+          id: 'q1',
+          name: 'Saved Quest',
+          nodes: [],
+          connections: [],
+          viewport: { x: 0, y: 0, zoom: 1 },
+          createdAt: '2024-06-01T12:00:00.000Z',
+          updatedAt: '2024-06-02T12:00:00.000Z',
+        },
+      ],
+      events: [],
+      settings: { autoSave: true, autoSaveInterval: 60, gridSnap: true, gridSize: 20 },
+    })
+
+    const reopened = parseProjectFile(internalJson)
+
+    expect(reopened.name).toBe('Saved Project')
+    expect(reopened.quests).toHaveLength(1)
+    expect(reopened.quests[0].name).toBe('Saved Quest')
+    expect(reopened.events).toHaveLength(0)
+    expect(reopened.createdAt).toBeInstanceOf(Date)
+    expect(reopened.settings.autoSave).toBe(true)
+  })
+
+  it('should throw for invalid JSON', () => {
+    expect(() => parseProjectFile('not json')).toThrow()
+  })
+
+  it('should throw when quests or events are missing', () => {
+    expect(() => parseProjectFile(JSON.stringify({ name: 'No arrays' }))).toThrow(
+      'Invalid project file: missing quests or events'
+    )
+    expect(() => parseProjectFile(JSON.stringify({ name: 'X', quests: [], events: null }))).toThrow(
+      'Invalid project file: missing quests or events'
+    )
+  })
+
+  it('exported files from Quest Designer must be openable (round-trip)', () => {
+    const project = createProject({
+      name: 'Quest Designer Feature Demo',
+      quests: [
+        createQuest({
+          id: 'quest-demo-main',
+          name: 'The Ember Quest',
+          nodes: [
+            createStartNode(),
+            createEndNode(),
+          ],
+          connections: [
+            {
+              id: 'conn-1',
+              sourceNodeId: 'start-1',
+              sourceOptionId: 'opt-1',
+              targetNodeId: 'end-1',
+              targetHandle: 'input-0',
+            },
+          ],
+        }),
+      ],
+      events: [
+        {
+          id: 'evt-wolf',
+          name: 'Wolf Alpha Killed',
+          description: 'Set when player kills the wolf',
+          parameters: [{ name: 'location', type: 'string' }],
+          usedInQuests: ['quest-demo-main'],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    })
+
+    const exported = exportProject(project)
+    const jsonString = toJsonString(exported)
+
+    expect(() => parseProjectFile(jsonString)).not.toThrow()
+
+    const reopened = parseProjectFile(jsonString)
+    expect(reopened.name).toBe(project.name)
+    expect(reopened.quests.length).toBe(project.quests.length)
+    expect(reopened.events.length).toBe(project.events.length)
+    expect(reopened.quests[0].connections[0].targetHandle).toBe('input-0')
   })
 })
