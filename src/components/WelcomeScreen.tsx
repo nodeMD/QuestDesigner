@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { FolderOpen, Plus, Sparkles, X, Clock } from 'lucide-react'
 import { useProjectStore } from '@/stores/projectStore'
+import { parseProjectFile } from '@/utils/export'
 
 const RECENT_PROJECT_KEY = 'quest-designer-recent-project'
 
@@ -32,24 +33,6 @@ function saveRecentProject(path: string, name: string) {
   } catch {
     // Ignore storage errors
   }
-}
-
-function parseProjectData(data: string) {
-  const project = JSON.parse(data)
-  // Convert date strings back to Date objects
-  project.createdAt = new Date(project.createdAt)
-  project.updatedAt = new Date(project.updatedAt)
-  project.quests = project.quests.map((q: any) => ({
-    ...q,
-    createdAt: new Date(q.createdAt),
-    updatedAt: new Date(q.updatedAt),
-  }))
-  project.events = project.events.map((e: any) => ({
-    ...e,
-    createdAt: new Date(e.createdAt),
-    updatedAt: new Date(e.updatedAt),
-  }))
-  return project
 }
 
 export function WelcomeScreen() {
@@ -84,7 +67,7 @@ export function WelcomeScreen() {
     const result = await window.electronAPI.loadFile()
     if (result.success && result.data && result.filePath) {
       try {
-        const project = parseProjectData(result.data)
+        const project = parseProjectFile(result.data)
         setProject(project)
         setFilePath(result.filePath)
         saveRecentProject(result.filePath, project.name)
@@ -101,7 +84,7 @@ export function WelcomeScreen() {
       // Load file directly from the stored path
       const result = await window.electronAPI.loadFromPath(recentProject.path)
       if (result.success && result.data && result.filePath) {
-        const project = parseProjectData(result.data)
+        const project = parseProjectFile(result.data)
         setProject(project)
         setFilePath(result.filePath)
         saveRecentProject(result.filePath, project.name)

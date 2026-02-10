@@ -1,0 +1,516 @@
+{
+  "version": "1.0.0",
+  "exportedAt": "2026-02-10T16:55:47.379Z",
+  "project": {
+    "name": "Quest Designer Demo",
+    "quests": [
+      {
+        "id": "quest-demo-main",
+        "name": "The Ember Quest",
+        "description": "A single quest demonstrating all node types and connections.",
+        "nodes": [
+          {
+            "id": "node-start",
+            "type": "START",
+            "position": {
+              "x": 390,
+              "y": 50
+            },
+            "title": "The Battered Caravan",
+            "location": {
+              "name": "Rivenhold",
+              "x": 125,
+              "y": 0,
+              "z": 340
+            },
+            "npc": {
+              "name": "Marcus the Merchant",
+              "type": "Human"
+            },
+            "description": "A battered caravan arrives at the frontier town. Marcus, a weary merchant, tells you that wolves have been attacking traders on the northern road. He offers gold to anyone who can deal with the threat.",
+            "options": [
+              {
+                "id": "opt-accept",
+                "label": "Accept the quest"
+              },
+              {
+                "id": "opt-details",
+                "label": "Ask for more details"
+              },
+              {
+                "id": "opt-decline",
+                "label": "Decline"
+              }
+            ]
+          },
+          {
+            "id": "node-dialogue-1",
+            "type": "DIALOGUE",
+            "position": {
+              "x": 50,
+              "y": 434
+            },
+            "speaker": "Marcus",
+            "text": "The wolves den is north of here, past the old mill. Take the path through the woods—you'll find their lair in a rocky outcrop. I've lost two guards already. Be careful.",
+            "options": [
+              {
+                "id": "opt-continue-1",
+                "label": "Continue"
+              }
+            ]
+          },
+          {
+            "id": "node-dialogue-short",
+            "type": "DIALOGUE",
+            "position": {
+              "x": 220,
+              "y": 734
+            },
+            "speaker": "GM",
+            "text": "You head north. The path is quiet until you reach the mill.",
+            "options": [
+              {
+                "id": "opt-continue-2",
+                "label": "Continue"
+              }
+            ]
+          },
+          {
+            "id": "node-choice",
+            "type": "CHOICE",
+            "position": {
+              "x": 390,
+              "y": 954
+            },
+            "prompt": "At the wolf den you find an injured alpha and three pups. What do you do?",
+            "options": [
+              {
+                "id": "opt-kill",
+                "label": "Kill the alpha and clear the den"
+              },
+              {
+                "id": "opt-spare",
+                "label": "Spare them and find another solution"
+              },
+              {
+                "id": "opt-take-ember",
+                "label": "Take the glowing ember near the alpha"
+              }
+            ]
+          },
+          {
+            "id": "node-event-trigger",
+            "type": "EVENT",
+            "position": {
+              "x": 227.5,
+              "y": 1265
+            },
+            "eventId": "evt-wolf-alpha-killed",
+            "eventName": "Wolf Alpha Killed",
+            "action": "TRIGGER",
+            "parameters": {
+              "location": "rivenhold_woods"
+            }
+          },
+          {
+            "id": "node-event-check",
+            "type": "EVENT",
+            "position": {
+              "x": 184,
+              "y": 1504
+            },
+            "eventId": "evt-wolf-alpha-killed",
+            "eventName": "Wolf Alpha Killed",
+            "action": "CHECK"
+          },
+          {
+            "id": "node-if",
+            "type": "IF",
+            "position": {
+              "x": 780,
+              "y": 1240
+            },
+            "condition": "player.hasItem(\"ember\") && faction.reputation(\"dwarves\") > 50"
+          },
+          {
+            "id": "node-and",
+            "type": "AND",
+            "position": {
+              "x": 460,
+              "y": 1504
+            },
+            "inputCount": 3
+          },
+          {
+            "id": "node-or",
+            "type": "OR",
+            "position": {
+              "x": 701,
+              "y": 1504
+            },
+            "inputCount": 2
+          },
+          {
+            "id": "node-end-success",
+            "type": "END",
+            "position": {
+              "x": 220,
+              "y": 1776
+            },
+            "title": "The Ember's Light",
+            "outcome": "SUCCESS",
+            "description": "You delivered the ember to the Forgemaster. The dwarves celebrate and grant you their blessing.",
+            "rewards": [
+              {
+                "type": "GOLD",
+                "value": 500,
+                "quantity": 1
+              },
+              {
+                "type": "ITEM",
+                "value": "Forgemaster's Blade"
+              }
+            ],
+            "factionChanges": [
+              {
+                "factionId": "iron-crown",
+                "factionName": "Iron Crown",
+                "change": 20
+              },
+              {
+                "factionId": "conclave",
+                "factionName": "Conclave",
+                "change": -10
+              }
+            ],
+            "triggeredEvents": [
+              "ember_delivered"
+            ]
+          },
+          {
+            "id": "node-end-failure",
+            "type": "END",
+            "position": {
+              "x": 560,
+              "y": 1776
+            },
+            "title": "Quest Failed",
+            "outcome": "FAILURE",
+            "description": "The wolves overran the road. Marcus's caravan never made it through."
+          },
+          {
+            "id": "node-end-neutral",
+            "type": "END",
+            "position": {
+              "x": 800,
+              "y": 740
+            },
+            "title": "Parted Ways",
+            "outcome": "NEUTRAL",
+            "description": "You left the ember behind. Some other adventurer will have to deal with it."
+          },
+          {
+            "id": "node-dialogue-details",
+            "type": "DIALOGUE",
+            "position": {
+              "x": 390,
+              "y": 434
+            },
+            "speaker": "Marcus",
+            "text": "I'll pay 200 gold for the alpha's head. The pups you can leave or deal with as you see fit. I just need the attacks to stop.",
+            "options": [
+              {
+                "id": "opt-back-1",
+                "label": "Understood. I'll do it."
+              }
+            ]
+          },
+          {
+            "id": "node-dialogue-decline",
+            "type": "DIALOGUE",
+            "position": {
+              "x": 730,
+              "y": 434
+            },
+            "speaker": "Marcus",
+            "text": "I understand. Safe travels. If you change your mind, I'll be here.",
+            "options": [
+              {
+                "id": "opt-leave",
+                "label": "Leave"
+              }
+            ]
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "sourceNodeId": "node-start",
+            "sourceOptionId": "opt-accept",
+            "targetNodeId": "node-dialogue-1"
+          },
+          {
+            "id": "c2",
+            "sourceNodeId": "node-start",
+            "sourceOptionId": "opt-details",
+            "targetNodeId": "node-dialogue-details"
+          },
+          {
+            "id": "c3",
+            "sourceNodeId": "node-start",
+            "sourceOptionId": "opt-decline",
+            "targetNodeId": "node-dialogue-decline"
+          },
+          {
+            "id": "c4",
+            "sourceNodeId": "node-dialogue-details",
+            "sourceOptionId": "opt-back-1",
+            "targetNodeId": "node-dialogue-1"
+          },
+          {
+            "id": "c5",
+            "sourceNodeId": "node-dialogue-decline",
+            "sourceOptionId": "opt-leave",
+            "targetNodeId": "node-end-neutral"
+          },
+          {
+            "id": "c6",
+            "sourceNodeId": "node-dialogue-1",
+            "sourceOptionId": "opt-continue-1",
+            "targetNodeId": "node-dialogue-short"
+          },
+          {
+            "id": "c7",
+            "sourceNodeId": "node-dialogue-short",
+            "sourceOptionId": "opt-continue-2",
+            "targetNodeId": "node-choice"
+          },
+          {
+            "id": "c8",
+            "sourceNodeId": "node-choice",
+            "sourceOptionId": "opt-kill",
+            "targetNodeId": "node-event-trigger"
+          },
+          {
+            "id": "c9",
+            "sourceNodeId": "node-event-trigger",
+            "targetNodeId": "node-event-check"
+          },
+          {
+            "id": "c10",
+            "sourceNodeId": "node-event-check",
+            "sourceOutput": "true",
+            "targetNodeId": "node-end-success"
+          },
+          {
+            "id": "c11",
+            "sourceNodeId": "node-event-check",
+            "sourceOutput": "false",
+            "targetNodeId": "node-if"
+          },
+          {
+            "id": "c12",
+            "sourceNodeId": "node-choice",
+            "sourceOptionId": "opt-spare",
+            "targetNodeId": "node-end-neutral"
+          },
+          {
+            "id": "c13",
+            "sourceNodeId": "node-choice",
+            "sourceOptionId": "opt-take-ember",
+            "targetNodeId": "node-if"
+          },
+          {
+            "id": "c14",
+            "sourceNodeId": "node-if",
+            "sourceOutput": "true",
+            "targetNodeId": "node-and"
+          },
+          {
+            "id": "c15",
+            "sourceNodeId": "node-if",
+            "sourceOutput": "false",
+            "targetNodeId": "node-or"
+          },
+          {
+            "id": "c16",
+            "sourceNodeId": "node-or",
+            "sourceOutput": "true",
+            "targetNodeId": "node-and"
+          },
+          {
+            "id": "c17",
+            "sourceNodeId": "node-and",
+            "targetNodeId": "node-end-success"
+          },
+          {
+            "id": "c19",
+            "sourceNodeId": "node-or",
+            "targetNodeId": "node-end-failure"
+          }
+        ]
+      },
+      {
+        "id": "quest-demo-follow-up",
+        "name": "After the Wolves",
+        "description": "A short second quest that checks the global event (cross-quest feature).",
+        "nodes": [
+          {
+            "id": "node-start-2",
+            "type": "START",
+            "position": {
+              "x": 220,
+              "y": 50
+            },
+            "title": "Back at Rivenhold",
+            "location": {
+              "name": "Rivenhold"
+            },
+            "npc": {
+              "name": "Marcus",
+              "type": "Human"
+            },
+            "description": "You return to Rivenhold. Marcus spots you and waves you over.",
+            "options": [
+              {
+                "id": "opt-talk",
+                "label": "Talk to Marcus"
+              }
+            ]
+          },
+          {
+            "id": "node-event-check-2",
+            "type": "EVENT",
+            "position": {
+              "x": 252,
+              "y": 290
+            },
+            "eventId": "evt-wolf-alpha-killed",
+            "eventName": "Wolf Alpha Killed",
+            "action": "CHECK"
+          },
+          {
+            "id": "node-dialogue-reward",
+            "type": "DIALOGUE",
+            "position": {
+              "x": 20,
+              "y": 500
+            },
+            "speaker": "Marcus",
+            "text": "You did it! The road is safe again. Here's your reward—200 gold as promised. You've earned the gratitude of every merchant in Rivenhold.",
+            "options": [
+              {
+                "id": "opt-done",
+                "label": "Accept and leave"
+              }
+            ]
+          },
+          {
+            "id": "node-dialogue-not-done",
+            "type": "DIALOGUE",
+            "position": {
+              "x": 520,
+              "y": 500
+            },
+            "speaker": "Marcus",
+            "text": "Still working on it? No rush—just come back when the wolves are dealt with. The offer stands.",
+            "options": [
+              {
+                "id": "opt-bye",
+                "label": "Goodbye"
+              }
+            ]
+          },
+          {
+            "id": "node-end-2",
+            "type": "END",
+            "position": {
+              "x": 60,
+              "y": 840
+            },
+            "title": "Payment Received",
+            "outcome": "SUCCESS",
+            "description": "You completed Marcus's quest and received your reward.",
+            "rewards": [
+              {
+                "type": "GOLD",
+                "value": 200,
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "id": "node-end-2-neutral",
+            "type": "END",
+            "position": {
+              "x": 390,
+              "y": 769
+            },
+            "title": "Quest In Progress",
+            "outcome": "NEUTRAL",
+            "description": "You haven't completed the wolf quest yet."
+          }
+        ],
+        "connections": [
+          {
+            "id": "c20",
+            "sourceNodeId": "node-start-2",
+            "sourceOptionId": "opt-talk",
+            "targetNodeId": "node-event-check-2"
+          },
+          {
+            "id": "c21",
+            "sourceNodeId": "node-event-check-2",
+            "sourceOutput": "true",
+            "targetNodeId": "node-dialogue-reward"
+          },
+          {
+            "id": "c22",
+            "sourceNodeId": "node-event-check-2",
+            "sourceOutput": "false",
+            "targetNodeId": "node-dialogue-not-done"
+          },
+          {
+            "id": "c23",
+            "sourceNodeId": "node-dialogue-reward",
+            "sourceOptionId": "opt-done",
+            "targetNodeId": "node-end-2"
+          },
+          {
+            "id": "c24",
+            "sourceNodeId": "node-dialogue-not-done",
+            "sourceOptionId": "opt-bye",
+            "targetNodeId": "node-end-2-neutral"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "evt-wolf-alpha-killed",
+        "name": "Wolf Alpha Killed",
+        "description": "Set when the player kills the wolf alpha in the Rivenhold woods. Used to gate rewards in follow-up quests.",
+        "parameters": [
+          {
+            "name": "location",
+            "type": "string",
+            "defaultValue": "rivenhold_woods",
+            "description": "Where the alpha was killed"
+          }
+        ]
+      },
+      {
+        "id": "evt-ember-delivered",
+        "name": "Ember Delivered",
+        "description": "Triggered when the player delivers the ember to the Forgemaster. Can affect other storylines.",
+        "parameters": [
+          {
+            "name": "recipient",
+            "type": "string",
+            "description": "Who received the ember"
+          }
+        ]
+      }
+    ]
+  }
+}

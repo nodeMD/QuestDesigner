@@ -94,6 +94,7 @@ export function exportProject(project: Project): ExportedProject {
           sourceOptionId: conn.sourceOptionId,
           sourceOutput: conn.sourceOutput,
           targetNodeId: conn.targetNodeId,
+          targetHandle: conn.targetHandle,
         })),
       })),
       events: project.events.map((event) => ({
@@ -103,6 +104,107 @@ export function exportProject(project: Project): ExportedProject {
         parameters: event.parameters,
       })),
     },
+  }
+}
+
+const defaultViewport: Viewport = { x: 0, y: 0, zoom: 1 }
+const defaultProjectSettings = {
+  autoSave: false,
+  autoSaveInterval: 40,
+  gridSnap: true,
+  gridSize: 20,
+}
+
+/**
+ * Convert exported project JSON (from "Export Entire Project") into a full Project
+ * so it can be opened with "Open Project".
+ */
+export function convertExportedProjectToProject(exported: ExportedProject): Project {
+  const now = new Date()
+  const p = exported.project
+  const project: Project = {
+    id: uuid(),
+    name: p.name,
+    version: exported.version || '1.0.0',
+    createdAt: now,
+    updatedAt: now,
+    settings: defaultProjectSettings,
+    quests: (p.quests || []).map((q) => ({
+      id: q.id,
+      name: q.name,
+      description: q.description,
+      nodes: q.nodes || [],
+      connections: (q.connections || []).map((c) => ({
+        id: c.id,
+        sourceNodeId: c.sourceNodeId,
+        sourceOptionId: c.sourceOptionId,
+        sourceOutput: c.sourceOutput,
+        targetNodeId: c.targetNodeId,
+        targetHandle: (c as { targetHandle?: string }).targetHandle,
+      })),
+      viewport: (q as { viewport?: Viewport }).viewport || defaultViewport,
+      createdAt: now,
+      updatedAt: now,
+      tags: (q as { tags?: string[] }).tags,
+    })) as unknown as Project['quests'],
+    events: (p.events || []).map((e) => ({
+      id: e.id,
+      name: e.name,
+      description: e.description,
+      parameters: e.parameters,
+      usedInQuests: (e as { usedInQuests?: string[] }).usedInQuests || [],
+      createdAt: now,
+      updatedAt: now,
+    })) as unknown as Project['events'],
+  }
+  return project
+}
+
+/**
+ * Parse a project file (JSON string) and return a Project.
+ * Supports both exported format (from "Export Entire Project") and internal format (from "Save Project").
+ * @throws Error if JSON is invalid or missing quests/events
+ */
+export function parseProjectFile(data: string): Project {
+  const parsed = JSON.parse(data)
+
+  // Exported format: { version, exportedAt, project: { name, quests, events } }
+  if (
+    parsed.project &&
+    Array.isArray(parsed.project.quests) &&
+    Array.isArray(parsed.project.events)
+  ) {
+    return convertExportedProjectToProject({
+      version: parsed.version ?? '1.0.0',
+      exportedAt: parsed.exportedAt ?? new Date().toISOString(),
+      project: parsed.project,
+    })
+  }
+
+  // Internal format: { id, name, version, quests, events, settings, createdAt, updatedAt }
+  const project = parsed
+  if (!Array.isArray(project.quests) || !Array.isArray(project.events)) {
+    throw new Error('Invalid project file: missing quests or events')
+  }
+  const now = Date.now()
+  return {
+    ...project,
+    createdAt: new Date(project.createdAt || now),
+    updatedAt: new Date(project.updatedAt || now),
+    quests: project.quests.map(
+      (q: { createdAt?: string; updatedAt?: string; [k: string]: unknown }) => ({
+        ...q,
+        createdAt: new Date(q.createdAt || now),
+        updatedAt: new Date(q.updatedAt || now),
+      })
+    ),
+    events: project.events.map(
+      (e: { createdAt?: string; updatedAt?: string; [k: string]: unknown }) => ({
+        ...e,
+        createdAt: new Date(e.createdAt || now),
+        updatedAt: new Date(e.updatedAt || now),
+      })
+    ),
   }
 }
 

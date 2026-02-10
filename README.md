@@ -6,6 +6,9 @@ A visual node-based quest design tool for game developers. Create complex, branc
 [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#installation)
 [![License](https://img.shields.io/badge/License-Quest%20Designer%20License-green)](LICENSE.md)
 
+<img width="2770" height="1776" alt="image" src="https://github.com/user-attachments/assets/1a2a75c2-386e-4aa4-a58b-840fb580844c" />
+
+
 ## Features
 
 ### Node-Based Editor
@@ -21,8 +24,8 @@ A visual node-based quest design tool for game developers. Create complex, branc
 - **Quest Preview** - Simulate and playtest your quests directly in the editor
 
 ### Import/Export
-- **JSON Export** - Export individual quests or entire projects to JSON
-- **JSON Import** - Import quests from JSON files
+- **JSON Export** - Export individual *quests* or entire *projects* to JSON
+- **JSON Import** - Import *quests* from JSON files (only quests can be imported, if you want to import whole project please open new project from welcome screen and choose project JSON file)
 - **Auto-Save** - Optional auto-save feature (off by default)
 
 ### Developer Experience
@@ -34,8 +37,8 @@ A visual node-based quest design tool for game developers. Create complex, branc
 ## Installation
 
 ### Prerequisites
-- Node.js 18+ 
-- npm or yarn
+- Node.js 20+
+- npm
 
 ### Development Setup
 
@@ -158,31 +161,15 @@ npm run typecheck
 - **React 18** - UI framework
 - **TypeScript** - Type-safe JavaScript
 - **Vite** - Fast build tool
-- **React Flow** - Node-based editor library
+- **React Flow (@xyflow/react)** - Node-based editor library
 - **Zustand** - State management
 - **Tailwind CSS** - Utility-first styling
+- **Vitest** - Unit testing
+- **Playwright** - End-to-end testing
 
-## Project Structure
+## Detailed Documentation
 
-```
-QuestDesigner/
-├── electron/           # Electron main process
-│   ├── main.ts        # Main process entry
-│   └── preload.ts     # Preload scripts
-├── src/
-│   ├── components/    # React components
-│   │   ├── layout/    # Layout components (Canvas, Sidebar, Toolbar)
-│   │   ├── nodes/     # Node type components
-│   │   ├── panels/    # Side panels (Edit, Validation, Search)
-│   │   └── ui/        # UI components (Modals, Context Menu)
-│   ├── hooks/         # Custom React hooks
-│   ├── stores/        # Zustand state stores
-│   ├── types/         # TypeScript type definitions
-│   ├── utils/         # Utility functions
-│   └── styles/        # Global styles
-├── CONTRIBUTING.md    # Contribution guidelines
-└── LICENSE.md         # License information
-```
+Please see [SPEC.md](SPEC.md) for all of the details.
 
 ## Contributing
 

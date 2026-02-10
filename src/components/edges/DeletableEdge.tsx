@@ -11,12 +11,14 @@ export function DeletableEdge({
   targetY,
   sourcePosition,
   targetPosition,
+  data,
   style = {},
   markerEnd,
 }: EdgeProps) {
   const [isHovered, setIsHovered] = useState(false)
   const { openDeleteModal } = useUIStore()
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const label = (data?.label as string) || ''
 
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
@@ -71,7 +73,7 @@ export function DeletableEdge({
         }}
       />
 
-      {/* Delete button - always rendered but visibility controlled */}
+      {/* Label + delete button at midpoint - visible on hover */}
       <EdgeLabelRenderer>
         <div
           style={{
@@ -80,11 +82,24 @@ export function DeletableEdge({
             pointerEvents: isHovered ? 'all' : 'none',
             opacity: isHovered ? 1 : 0,
             transition: 'opacity 0.15s ease',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 6,
           }}
           className="nodrag nopan"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
+          {label && (
+            <span
+              className="px-2 py-1 rounded text-xs font-medium whitespace-nowrap max-w-[200px] truncate
+                         bg-panel-bg border border-panel-border text-text-primary shadow-panel"
+              title={label}
+            >
+              {label}
+            </span>
+          )}
           <button
             onClick={handleDelete}
             className="w-7 h-7 flex items-center justify-center bg-validation-error text-white 

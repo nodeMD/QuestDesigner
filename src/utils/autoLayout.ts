@@ -163,41 +163,72 @@ export function autoLayoutQuest(
     cumulativeY += levelH + opts.verticalSpacing
   }
 
-  // Calculate positions
-  const positions = new Map<string, Position>()
-  const maxNodesInLevel = Math.max(...Array.from(levels.values()).map((n) => n.length))
-
-  layoutNodes.forEach((node) => {
-    const levelNodes = levels.get(node.level) || []
-    const nodesInLevel = levelNodes.length
-
-    // Calculate total width of this level
-    const totalWidth = nodesInLevel * opts.nodeWidth + (nodesInLevel - 1) * opts.horizontalSpacing
-
-    // Center the level horizontally
-    const startX = -totalWidth / 2 + opts.nodeWidth / 2
-
-    let x: number
-    let y: number
-
-    if (opts.direction === 'TB') {
-      x = startX + node.index * (opts.nodeWidth + opts.horizontalSpacing)
-      y = levelYOffset.get(node.level) || 0
-    } else {
-      // Left to Right
-      x = levelYOffset.get(node.level) || 0
-      y = startX + node.index * (opts.nodeHeight + opts.verticalSpacing)
-    }
-
-    // Add some base offset so nodes don't start at negative coordinates
-    const offsetX = (maxNodesInLevel * (opts.nodeWidth + opts.horizontalSpacing)) / 2 + 50
-    const offsetY = 50
-
-    positions.set(node.id, {
-      x: x + offsetX,
-      y: y + offsetY,
+  // Per-level total width (sum of node widths + gaps) for horizontal centering
+  const levelTotalWidth = new Map<number, number>()
+  let maxTotalLevelWidth = 0
+  for (let lvl = 0; lvl <= maxLevel; lvl++) {
+    const nodeIds = levels.get(lvl) || []
+    let totalW = 0
+    nodeIds.forEach((id) => {
+      const n = layoutNodes.get(id)
+      if (n) totalW += n.width
     })
-  })
+    totalW += (nodeIds.length - 1) * opts.horizontalSpacing
+    levelTotalWidth.set(lvl, totalW)
+    maxTotalLevelWidth = Math.max(maxTotalLevelWidth, totalW)
+  }
+
+  const offsetX = maxTotalLevelWidth / 2 + 50
+  const offsetY = 50
+
+  // Calculate positions: use each node's actual width for horizontal placement
+  const positions = new Map<string, Position>()
+
+  if (opts.direction === 'TB') {
+    layoutNodes.forEach((node) => {
+      const levelNodes = levels.get(node.level) || []
+      const totalWidth = levelTotalWidth.get(node.level) || 0
+      const startX = -totalWidth / 2
+
+      // Cumulative X: sum of widths of all nodes before this one in the level + gaps
+      let cumulativeX = 0
+      for (let i = 0; i < node.index; i++) {
+        const n = layoutNodes.get(levelNodes[i])
+        if (n) cumulativeX += n.width + opts.horizontalSpacing
+      }
+
+      const x = startX + cumulativeX + offsetX
+      const y = (levelYOffset.get(node.level) || 0) + offsetY
+
+      positions.set(node.id, { x, y })
+    })
+  } else {
+    // Left to Right: level = x (column), index = y (stack within column); use variable heights per level
+    const levelTotalHeight = new Map<number, number>()
+    for (let lvl = 0; lvl <= maxLevel; lvl++) {
+      const nodeIds = levels.get(lvl) || []
+      let totalH = 0
+      nodeIds.forEach((id) => {
+        const n = layoutNodes.get(id)
+        if (n) totalH += n.height
+      })
+      totalH += (nodeIds.length - 1) * opts.verticalSpacing
+      levelTotalHeight.set(lvl, totalH)
+    }
+    layoutNodes.forEach((node) => {
+      const levelNodes = levels.get(node.level) || []
+      const totalHeight = levelTotalHeight.get(node.level) || 0
+      const startY = -totalHeight / 2
+      let cumulativeY = 0
+      for (let i = 0; i < node.index; i++) {
+        const n = layoutNodes.get(levelNodes[i])
+        if (n) cumulativeY += n.height + opts.verticalSpacing
+      }
+      const x = (levelYOffset.get(node.level) || 0) + offsetX
+      const y = startY + cumulativeY + offsetY
+      positions.set(node.id, { x, y })
+    })
+  }
 
   return positions
 }
@@ -214,8 +245,8 @@ function estimateTextLines(text: string, containerWidth: number): number {
   return Math.ceil(text.length / charsPerLine)
 }
 
-// Node content area width: max-width 280px minus horizontal padding (px-3 = 12px * 2)
-const NODE_CONTENT_WIDTH = 280 - 24
+// Node content area width: max-width 260px minus horizontal padding (px-3 = 12px * 2)
+const NODE_CONTENT_WIDTH = 260 - 24
 // Line height for text-sm in Tailwind (1.25rem = 20px)
 const LINE_HEIGHT = 20
 

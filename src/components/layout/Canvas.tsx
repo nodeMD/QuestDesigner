@@ -67,6 +67,26 @@ function getEdgeColor(nodeType: string): string {
   return colors[nodeType] || '#666666'
 }
 
+// Get a short label for an edge (option text or True/False) so users can tell outputs apart
+function getEdgeLabel(
+  conn: { sourceOptionId?: string; sourceOutput?: string },
+  sourceNode: QuestNode | undefined
+): string {
+  if (conn.sourceOutput) {
+    return conn.sourceOutput === 'true' ? 'True' : 'False'
+  }
+  if (
+    conn.sourceOptionId &&
+    sourceNode &&
+    'options' in sourceNode &&
+    Array.isArray(sourceNode.options)
+  ) {
+    const opt = sourceNode.options.find((o: { id: string }) => o.id === conn.sourceOptionId)
+    if (opt && 'label' in opt) return (opt.label as string).slice(0, 32)
+  }
+  return ''
+}
+
 export function Canvas() {
   const {
     project,
@@ -152,6 +172,7 @@ export function Canvas() {
         sourceHandle: conn.sourceOptionId || conn.sourceOutput,
         targetHandle: conn.targetHandle,
         type: 'deletable',
+        data: { label: getEdgeLabel(conn, sourceNode) },
         style: {
           stroke: getEdgeColor(sourceNode?.type || ''),
         },
