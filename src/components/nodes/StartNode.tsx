@@ -51,7 +51,7 @@ export const StartNode = memo(({ data, selected, id }: NodeProps) => {
 
       {/* Description */}
       <div className="quest-node-content">
-        <p className="text-text-primary text-sm line-clamp-3">"{node.description}"</p>
+        <p className="text-text-primary text-sm line-clamp-6">"{node.description}"</p>
       </div>
 
       {/* Options */}
