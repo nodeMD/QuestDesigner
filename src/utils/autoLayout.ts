@@ -43,7 +43,7 @@ interface LayoutNode {
 export function autoLayoutQuest(
   quest: Quest,
   measuredDimensions?: Map<string, MeasuredNodeDimensions>,
-  options: LayoutOptions = {},
+  options: LayoutOptions = {}
 ): Map<string, Position> {
   const opts = { ...DEFAULT_OPTIONS, ...options }
 
@@ -293,7 +293,11 @@ function getNodeHeight(node: QuestNode): number {
       return headerHeight + 40
 
     case 'END': {
-      const endNode = node as { description?: string; rewards?: unknown[]; factionChanges?: unknown[] }
+      const endNode = node as {
+        description?: string
+        rewards?: unknown[]
+        factionChanges?: unknown[]
+      }
       let h = headerHeight + 32 // outcome badge
       const descLines = estimateTextLines(endNode.description || '', NODE_CONTENT_WIDTH)
       h += descLines * LINE_HEIGHT + 16

@@ -8,12 +8,9 @@ export function StatusBar() {
   const [zoom, setZoom] = useState(1)
 
   // Listen for viewport changes to keep zoom level in sync
-  const onViewportChange = useCallback(
-    (viewport: { zoom: number }) => {
-      setZoom(viewport.zoom)
-    },
-    []
-  )
+  const onViewportChange = useCallback((viewport: { zoom: number }) => {
+    setZoom(viewport.zoom)
+  }, [])
 
   useOnViewportChange({
     onStart: onViewportChange,
