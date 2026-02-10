@@ -53,8 +53,8 @@ html, body, #root {
 /* Custom node styles */
 .quest-node {
   @apply bg-panel-bg rounded-lg shadow-node border border-panel-border;
-  min-width: 140px;
-  max-width: 3000px;
+  min-width: 120px;
+  max-width: 260px;
   font-family: 'Inter', sans-serif;
 }
 
