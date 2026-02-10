@@ -95,7 +95,7 @@ export function Toolbar() {
 
     const exportData = exportQuest(currentQuest)
     const jsonString = toJsonString(exportData)
-    const filename = `${currentQuest.name.replace(/\s+/g, '-').toLowerCase()}-export.json`
+    const filename = `${currentQuest.name.replace(/\s+/g, '-').toLowerCase()}-quest.json`
 
     if (window.electronAPI) {
       await window.electronAPI.exportFile(jsonString, filename)
