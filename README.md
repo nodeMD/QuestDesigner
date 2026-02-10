@@ -34,8 +34,8 @@ A visual node-based quest design tool for game developers. Create complex, branc
 ## Installation
 
 ### Prerequisites
-- Node.js 18+ 
-- npm or yarn
+- Node.js 20+
+- npm
 
 ### Development Setup
 
@@ -158,30 +158,37 @@ npm run typecheck
 - **React 18** - UI framework
 - **TypeScript** - Type-safe JavaScript
 - **Vite** - Fast build tool
-- **React Flow** - Node-based editor library
+- **React Flow (@xyflow/react)** - Node-based editor library
 - **Zustand** - State management
 - **Tailwind CSS** - Utility-first styling
+- **Vitest** - Unit testing
+- **Playwright** - End-to-end testing
 
 ## Project Structure
 
 ```
 QuestDesigner/
+├── .github/workflows/  # CI pipeline (GitHub Actions)
+├── e2e/                # End-to-end Playwright tests
 ├── electron/           # Electron main process
-│   ├── main.ts        # Main process entry
-│   └── preload.ts     # Preload scripts
+│   ├── main.ts         # Main process entry + IPC handlers
+│   └── preload.ts      # Preload script (contextBridge)
 ├── src/
-│   ├── components/    # React components
-│   │   ├── layout/    # Layout components (Canvas, Sidebar, Toolbar)
-│   │   ├── nodes/     # Node type components
-│   │   ├── panels/    # Side panels (Edit, Validation, Search)
-│   │   └── ui/        # UI components (Modals, Context Menu)
-│   ├── hooks/         # Custom React hooks
-│   ├── stores/        # Zustand state stores
-│   ├── types/         # TypeScript type definitions
-│   ├── utils/         # Utility functions
-│   └── styles/        # Global styles
-├── CONTRIBUTING.md    # Contribution guidelines
-└── LICENSE.md         # License information
+│   ├── components/     # React components
+│   │   ├── layout/     # Canvas, Sidebar, Toolbar, StatusBar
+│   │   ├── nodes/      # Node type components + NodeActions
+│   │   ├── panels/     # Edit, Validation, Search, Simulation panels
+│   │   ├── edges/      # Custom edge components
+│   │   └── ui/         # Context Menu, Delete Modal
+│   ├── hooks/          # useAutoSave, useKeyboardShortcuts
+│   ├── stores/         # Zustand stores (project, UI)
+│   ├── types/          # TypeScript type definitions
+│   ├── utils/          # Export, validation, search, auto-layout
+│   └── styles/         # Global styles
+├── SPEC.md             # Detailed technical specification
+├── README.md           # This file
+├── CONTRIBUTING.md     # Contribution guidelines
+└── LICENSE.md          # License information
 ```
 
 ## Contributing
