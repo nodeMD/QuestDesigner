@@ -238,6 +238,8 @@ test.describe('Quest Designer - Node Creation Flow', () => {
     }
     
     await window.waitForTimeout(500)
+
+    await window.getByText('Save changes').first().click()
     
     // Create END node
     await canvas.click({ button: 'right', position: { x: 400, y: 200 } })
