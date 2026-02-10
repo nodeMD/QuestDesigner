@@ -24,8 +24,8 @@ A visual node-based quest design tool for game developers. Create complex, branc
 - **Quest Preview** - Simulate and playtest your quests directly in the editor
 
 ### Import/Export
-- **JSON Export** - Export individual quests or entire projects to JSON
-- **JSON Import** - Import quests from JSON files
+- **JSON Export** - Export individual *quests* or entire *projects* to JSON
+- **JSON Import** - Import *quests* from JSON files (only quests can be imported, if you want to import whole project please open new project from welcome screen and choose project JSON file)
 - **Auto-Save** - Optional auto-save feature (off by default)
 
 ### Developer Experience
