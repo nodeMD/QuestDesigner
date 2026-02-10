@@ -75,7 +75,12 @@ function getEdgeLabel(
   if (conn.sourceOutput) {
     return conn.sourceOutput === 'true' ? 'True' : 'False'
   }
-  if (conn.sourceOptionId && sourceNode && 'options' in sourceNode && Array.isArray(sourceNode.options)) {
+  if (
+    conn.sourceOptionId &&
+    sourceNode &&
+    'options' in sourceNode &&
+    Array.isArray(sourceNode.options)
+  ) {
     const opt = sourceNode.options.find((o: { id: string }) => o.id === conn.sourceOptionId)
     if (opt && 'label' in opt) return (opt.label as string).slice(0, 32)
   }

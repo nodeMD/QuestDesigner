@@ -169,7 +169,11 @@ export function parseProjectFile(data: string): Project {
   const parsed = JSON.parse(data)
 
   // Exported format: { version, exportedAt, project: { name, quests, events } }
-  if (parsed.project && Array.isArray(parsed.project.quests) && Array.isArray(parsed.project.events)) {
+  if (
+    parsed.project &&
+    Array.isArray(parsed.project.quests) &&
+    Array.isArray(parsed.project.events)
+  ) {
     return convertExportedProjectToProject({
       version: parsed.version ?? '1.0.0',
       exportedAt: parsed.exportedAt ?? new Date().toISOString(),
@@ -187,16 +191,20 @@ export function parseProjectFile(data: string): Project {
     ...project,
     createdAt: new Date(project.createdAt || now),
     updatedAt: new Date(project.updatedAt || now),
-    quests: project.quests.map((q: { createdAt?: string; updatedAt?: string; [k: string]: unknown }) => ({
-      ...q,
-      createdAt: new Date(q.createdAt || now),
-      updatedAt: new Date(q.updatedAt || now),
-    })),
-    events: project.events.map((e: { createdAt?: string; updatedAt?: string; [k: string]: unknown }) => ({
-      ...e,
-      createdAt: new Date(e.createdAt || now),
-      updatedAt: new Date(e.updatedAt || now),
-    })),
+    quests: project.quests.map(
+      (q: { createdAt?: string; updatedAt?: string; [k: string]: unknown }) => ({
+        ...q,
+        createdAt: new Date(q.createdAt || now),
+        updatedAt: new Date(q.updatedAt || now),
+      })
+    ),
+    events: project.events.map(
+      (e: { createdAt?: string; updatedAt?: string; [k: string]: unknown }) => ({
+        ...e,
+        createdAt: new Date(e.createdAt || now),
+        updatedAt: new Date(e.updatedAt || now),
+      })
+    ),
   }
 }
 

@@ -342,13 +342,20 @@ describe('convertExportedProjectToProject', () => {
           {
             id: 'q1',
             name: 'First Quest',
-            nodes: [{ id: 'n1', type: 'START', position: { x: 0, y: 0 }, title: 'S', description: '', options: [] }],
+            nodes: [
+              {
+                id: 'n1',
+                type: 'START',
+                position: { x: 0, y: 0 },
+                title: 'S',
+                description: '',
+                options: [],
+              },
+            ],
             connections: [],
           },
         ],
-        events: [
-          { id: 'e1', name: 'Event1', parameters: [{ name: 'x', type: 'number' }] },
-        ],
+        events: [{ id: 'e1', name: 'Event1', parameters: [{ name: 'x', type: 'number' }] }],
       },
     }
 
@@ -463,10 +470,7 @@ describe('parseProjectFile', () => {
         createQuest({
           id: 'quest-demo-main',
           name: 'The Ember Quest',
-          nodes: [
-            createStartNode(),
-            createEndNode(),
-          ],
+          nodes: [createStartNode(), createEndNode()],
           connections: [
             {
               id: 'conn-1',
