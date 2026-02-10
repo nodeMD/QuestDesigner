@@ -12,6 +12,7 @@ import {
   Search,
   Play,
 } from 'lucide-react'
+import { useReactFlow } from '@xyflow/react'
 import { useProjectStore } from '@/stores/projectStore'
 import { useUIStore } from '@/stores/uiStore'
 import {
@@ -23,6 +24,7 @@ import {
 } from '@/utils/export'
 import { validateQuest } from '@/utils/validation'
 import { autoLayoutQuest } from '@/utils/autoLayout'
+import type { MeasuredNodeDimensions } from '@/utils/autoLayout'
 
 const RECENT_PROJECT_KEY = 'quest-designer-recent-project'
 
@@ -55,6 +57,7 @@ export function Toolbar() {
   } = useProjectStore()
   const { setValidating, setValidationPanelOpen, openSearch, startSimulation } = useUIStore()
 
+  const reactFlowInstance = useReactFlow()
   const [isSaving, setIsSaving] = useState(false)
   const [validationResult, setValidationResult] = useState<'valid' | 'invalid' | null>(null)
 
@@ -137,7 +140,18 @@ export function Toolbar() {
   const handleAutoLayout = () => {
     if (!currentQuest || currentQuest.nodes.length === 0) return
 
-    const positions = autoLayoutQuest(currentQuest)
+    // Read actual DOM-measured node dimensions from React Flow
+    const measuredDimensions = new Map<string, MeasuredNodeDimensions>()
+    const flowNodes = reactFlowInstance.getNodes()
+    for (const flowNode of flowNodes) {
+      const w = flowNode.measured?.width ?? flowNode.width
+      const h = flowNode.measured?.height ?? flowNode.height
+      if (w != null && h != null) {
+        measuredDimensions.set(flowNode.id, { width: w, height: h })
+      }
+    }
+
+    const positions = autoLayoutQuest(currentQuest, measuredDimensions)
     applyAutoLayout(positions)
   }
 
