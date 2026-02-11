@@ -165,11 +165,17 @@ export function Canvas() {
     if (!currentQuest) return []
     return currentQuest.connections.map((conn) => {
       const sourceNode = currentQuest.nodes.find((n) => n.id === conn.sourceNodeId)
+      // Only set sourceHandle when the source node has a handle with that id.
+      // IF and EVENT CHECK have handles "true"/"false"; AND/OR have a single handle with no id.
+      const sourceHandle =
+        sourceNode?.type === 'AND' || sourceNode?.type === 'OR'
+          ? undefined
+          : (conn.sourceOptionId || conn.sourceOutput) ?? undefined
       return {
         id: conn.id,
         source: conn.sourceNodeId,
         target: conn.targetNodeId,
-        sourceHandle: conn.sourceOptionId || conn.sourceOutput,
+        sourceHandle,
         targetHandle: conn.targetHandle,
         type: 'deletable',
         data: { label: getEdgeLabel(conn, sourceNode) },

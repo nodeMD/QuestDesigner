@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 import { validateQuest, hasErrors, isQuestValid } from './validation'
+import { parseProjectFile } from './export'
 import type {
   Quest,
   StartNode,
@@ -425,6 +428,19 @@ describe('validateQuest', () => {
           nodeId: 'unreachable',
         })
       )
+    })
+
+    it('should not report EVENT Trigger as unreachable when connected from CHOICE (demo quest)', () => {
+      const demoPath = join(process.cwd(), 'demo', 'quest-designer-demo.json')
+      const raw = readFileSync(demoPath, 'utf-8')
+      const project = parseProjectFile(raw)
+      const emberQuest = project.quests.find((q) => q.name === 'The Ember Quest')
+      expect(emberQuest).toBeDefined()
+      const issues = validateQuest(emberQuest!)
+      const unreachableEvent = issues.filter(
+        (i) => i.type === 'UNREACHABLE' && i.nodeId === 'node-event-trigger'
+      )
+      expect(unreachableEvent).toHaveLength(0)
     })
   })
 

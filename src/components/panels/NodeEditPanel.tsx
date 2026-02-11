@@ -15,6 +15,8 @@ import type {
   AndNode,
   OrNode,
   GlobalEvent,
+  Reward,
+  FactionChange,
 } from '@/types'
 
 export function NodeEditPanel() {
@@ -782,6 +784,49 @@ function EndNodeFields({
   node: EndNode
   onUpdate: (u: Partial<EndNode>) => void
 }) {
+  const rewards = node.rewards ?? []
+  const factionChanges = node.factionChanges ?? []
+  const triggeredEvents = node.triggeredEvents ?? []
+
+  const addReward = () => {
+    onUpdate({
+      rewards: [...rewards, { type: 'GOLD', value: 0, quantity: 1 }],
+    })
+  }
+  const updateReward = (index: number, updates: Partial<Reward>) => {
+    const next = rewards.map((r, i) => (i === index ? { ...r, ...updates } : r))
+    onUpdate({ rewards: next })
+  }
+  const removeReward = (index: number) => {
+    onUpdate({ rewards: rewards.filter((_, i) => i !== index) })
+  }
+
+  const addFactionChange = () => {
+    onUpdate({
+      factionChanges: [
+        ...factionChanges,
+        { factionId: uuid(), factionName: '', change: 0 },
+      ],
+    })
+  }
+  const updateFactionChange = (index: number, updates: Partial<FactionChange>) => {
+    const next = factionChanges.map((fc, i) =>
+      i === index ? { ...fc, ...updates } : fc
+    )
+    onUpdate({ factionChanges: next })
+  }
+  const removeFactionChange = (index: number) => {
+    onUpdate({ factionChanges: factionChanges.filter((_, i) => i !== index) })
+  }
+
+  const setTriggeredEvents = (raw: string) => {
+    const list = raw
+      .split(/[\n,]+/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+    onUpdate({ triggeredEvents: list })
+  }
+
   return (
     <>
       <div>
@@ -818,6 +863,130 @@ function EndNodeFields({
           className="w-full text-sm h-20"
           placeholder="What happens in this ending?"
         />
+      </div>
+
+      {/* Rewards */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <label className="block text-xs font-medium text-text-muted">Rewards</label>
+          <button
+            type="button"
+            onClick={addReward}
+            className="text-xs text-accent-blue hover:underline flex items-center gap-0.5"
+          >
+            <Plus className="w-3 h-3" /> Add
+          </button>
+        </div>
+        {rewards.length === 0 && (
+          <p className="text-xs text-text-muted italic">No rewards</p>
+        )}
+        {rewards.map((reward, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-2 mb-2 p-2 rounded bg-sidebar-bg border border-panel-border"
+          >
+            <select
+              value={reward.type}
+              onChange={(e) =>
+                updateReward(i, {
+                  type: e.target.value as Reward['type'],
+                })
+              }
+              className="text-sm flex-1 min-w-0"
+            >
+              <option value="GOLD">Gold</option>
+              <option value="EXPERIENCE">Experience</option>
+              <option value="ITEM">Item</option>
+              <option value="CUSTOM">Custom</option>
+            </select>
+            <input
+              type={reward.type === 'GOLD' || reward.type === 'EXPERIENCE' ? 'number' : 'text'}
+              value={reward.value}
+              onChange={(e) =>
+                updateReward(i, {
+                  value:
+                    reward.type === 'GOLD' || reward.type === 'EXPERIENCE'
+                      ? Number(e.target.value) || 0
+                      : e.target.value,
+                })
+              }
+              className="text-sm w-20"
+              placeholder={reward.type === 'ITEM' ? 'Item name' : 'Amount'}
+            />
+            <button
+              type="button"
+              onClick={() => removeReward(i)}
+              className="p-1 text-text-muted hover:text-node-end"
+              title="Remove reward"
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Reputation (faction changes) */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <label className="block text-xs font-medium text-text-muted">Reputation</label>
+          <button
+            type="button"
+            onClick={addFactionChange}
+            className="text-xs text-accent-blue hover:underline flex items-center gap-0.5"
+          >
+            <Plus className="w-3 h-3" /> Add
+          </button>
+        </div>
+        {factionChanges.length === 0 && (
+          <p className="text-xs text-text-muted italic">No reputation changes</p>
+        )}
+        {factionChanges.map((fc, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-2 mb-2 p-2 rounded bg-sidebar-bg border border-panel-border"
+          >
+            <input
+              type="text"
+              value={fc.factionName}
+              onChange={(e) => updateFactionChange(i, { factionName: e.target.value })}
+              className="text-sm flex-1 min-w-0"
+              placeholder="Faction name"
+            />
+            <input
+              type="number"
+              value={fc.change}
+              onChange={(e) =>
+                updateFactionChange(i, { change: Number(e.target.value) || 0 })
+              }
+              className="text-sm w-16"
+              placeholder="+/-"
+            />
+            <button
+              type="button"
+              onClick={() => removeFactionChange(i)}
+              className="p-1 text-text-muted hover:text-node-end"
+              title="Remove"
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Triggers */}
+      <div>
+        <label className="block text-xs font-medium text-text-muted mb-1">
+          Triggers (events fired when this ending is reached)
+        </label>
+        <textarea
+          value={triggeredEvents.join(', ')}
+          onChange={(e) => setTriggeredEvents(e.target.value)}
+          className="w-full text-sm h-16"
+          placeholder="e.g. ember_delivered, quest_complete"
+        />
+        <p className="text-xs text-text-muted mt-0.5">
+          Comma- or newline-separated event IDs
+        </p>
       </div>
     </>
   )

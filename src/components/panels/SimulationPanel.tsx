@@ -88,6 +88,15 @@ export function SimulationPanel() {
     }
   }, [currentNode, currentQuest, getOutgoingConnections, goToNode])
 
+  // Handle continuing from AND/OR (single output): go to first outgoing connection
+  const handleLogicContinue = useCallback(() => {
+    if (!currentNode || !currentQuest) return
+    const connections = getOutgoingConnections(currentNode.id)
+    if (connections.length >= 1) {
+      goToNode(connections[0].targetNodeId)
+    }
+  }, [currentNode, currentQuest, getOutgoingConnections, goToNode])
+
   // Handle condition branch selection
   const handleConditionBranch = useCallback(
     (branch: 'true' | 'false') => {
@@ -107,7 +116,11 @@ export function SimulationPanel() {
   if (!isSimulationOpen) return null
 
   const outgoingConnections = currentNode ? getOutgoingConnections(currentNode.id) : []
-  const canContinue = outgoingConnections.length === 1 && !('options' in currentNode!)
+  const isLogicNode = currentNode?.type === 'AND' || currentNode?.type === 'OR'
+  const canContinue =
+    outgoingConnections.length === 1 &&
+    !('options' in currentNode!) &&
+    !isLogicNode
   const isEndNode = currentNode?.type === 'END'
 
   return (
@@ -155,7 +168,13 @@ export function SimulationPanel() {
               </div>
 
               {/* Node content based on type */}
-              {renderNodeContent(currentNode, handleSelectOption, handleConditionBranch)}
+              {renderNodeContent(currentNode, handleSelectOption, handleConditionBranch, {
+                onLogicContinue:
+                  (currentNode?.type === 'AND' || currentNode?.type === 'OR') &&
+                  outgoingConnections.length >= 1
+                    ? handleLogicContinue
+                    : undefined,
+              })}
 
               {/* Continue button for simple nodes */}
               {canContinue && !isEndNode && (
@@ -227,8 +246,10 @@ function getNodeIcon(type: string) {
 function renderNodeContent(
   node: QuestNode,
   onSelectOption: (optionId: string) => void,
-  onConditionBranch: (branch: 'true' | 'false') => void
+  onConditionBranch: (branch: 'true' | 'false') => void,
+  options?: { onLogicContinue?: () => void }
 ) {
+  const { onLogicContinue } = options ?? {}
   switch (node.type) {
     case 'START':
       return (
@@ -323,6 +344,27 @@ function renderNodeContent(
               Parameters: {JSON.stringify(node.parameters)}
             </div>
           )}
+          {node.action === 'CHECK' && (
+            <div className="space-y-2 pt-2">
+              <p className="text-xs text-text-muted">Choose the result:</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onConditionBranch('true')}
+                  className="flex-1 px-3 py-2 bg-node-start/20 hover:bg-node-start/30 
+                             text-node-start rounded-md text-sm transition-colors"
+                >
+                  ✓ Triggered
+                </button>
+                <button
+                  onClick={() => onConditionBranch('false')}
+                  className="flex-1 px-3 py-2 bg-node-end/20 hover:bg-node-end/30 
+                             text-node-end rounded-md text-sm transition-colors"
+                >
+                  ✗ Not triggered
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )
 
@@ -365,6 +407,17 @@ function renderNodeContent(
               : 'At least one input must be satisfied'}
           </p>
           <p className="text-xs text-text-muted">Inputs: {node.inputCount}</p>
+          {onLogicContinue && (
+            <button
+              onClick={onLogicContinue}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 mt-2
+                         bg-accent-blue hover:bg-accent-hover text-white rounded-md 
+                         transition-colors text-sm"
+            >
+              Continue
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
         </div>
       )
 
